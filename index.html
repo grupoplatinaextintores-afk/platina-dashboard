@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Carteira · Platina Extintores</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  /* ── CONFIG: substitua os dois valores abaixo ── */
+  /* SUPABASE_URL e SUPABASE_ANON_KEY estão no JS abaixo */
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --red:      #C0392B;
+    --red-light:#FAECE7;
+    --dark:     #1A1A2E;
+    --green:    #1D9E75;
+    --green-bg: #E1F5EE;
+    --amber:    #BA7517;
+    --amber-bg: #FAEEDA;
+    --blue:     #185FA5;
+    --blue-bg:  #E6F1FB;
+    --gray:     #5F5E5A;
+    --gray-bg:  #F1EFE8;
+    --border:   #E0DED7;
+    --bg:       #F7F6F2;
+    --surface:  #FFFFFF;
+    --text:     #1A1A2E;
+    --text-2:   #5F5E5A;
+    --text-3:   #9C9A92;
+    --danger:   #E24B4A;
+    --danger-bg:#FCEBEB;
+    --radius:   10px;
+    --radius-sm:6px;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--dark);
+    padding: 0 2rem;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .brand-icon {
+    width: 28px;
+    height: 28px;
+    background: var(--red);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .brand-icon svg { width: 16px; height: 16px; fill: white; }
+  .brand-name { font-size: 14px; font-weight: 600; color: white; letter-spacing: .02em; }
+  .brand-sub  { font-size: 11px; color: rgba(255,255,255,.45); margin-left: 2px; }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .last-update { font-size: 11px; color: rgba(255,255,255,.4); }
+  .btn-refresh {
+    background: rgba(255,255,255,.1);
+    border: 1px solid rgba(255,255,255,.15);
+    color: white;
+    border-radius: var(--radius-sm);
+    padding: 5px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background .15s;
+  }
+  .btn-refresh:hover { background: rgba(255,255,255,.18); }
+  .btn-refresh svg { width: 13px; height: 13px; fill: none; stroke: white; stroke-width: 2; }
+
+  /* ── LAYOUT ── */
+  .main { max-width: 1100px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
+
+  /* ── FILTROS ── */
+  .filters {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+  }
+  .filter-label { font-size: 12px; color: var(--text-2); }
+  .filter-select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 6px 10px;
+    font-size: 12px;
+    color: var(--text);
+    cursor: pointer;
+  }
+  .filter-select:focus { outline: none; border-color: var(--red); }
+  .badge-live {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--green-bg);
+    color: var(--green);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 500;
+    margin-left: auto;
+  }
+  .dot-live {
+    width: 7px; height: 7px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  /* ── MÉTRICAS ── */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin-bottom: 1.5rem;
+  }
+  .metric {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: .875rem 1rem;
+  }
+  .metric.highlight { border-left: 3px solid var(--green); }
+  .metric.highlight-warn { border-left: 3px solid var(--danger); }
+  .metric-label { font-size: 11px; color: var(--text-3); font-weight: 500; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+  .metric-value { font-size: 28px; font-weight: 600; color: var(--text); line-height: 1; margin-bottom: 4px; }
+  .metric-value.green { color: var(--green); }
+  .metric-value.red   { color: var(--danger); }
+  .metric-sub { font-size: 11px; color: var(--text-3); }
+
+  /* ── SEÇÕES ── */
+  .section-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    margin-bottom: .75rem;
+    margin-top: 1.75rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── FUNIL ── */
+  .funnel-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .funnel-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .funnel-row:last-child { margin-bottom: 0; }
+  .funnel-name { font-size: 12px; color: var(--text-2); min-width: 130px; }
+  .funnel-track {
+    flex: 1;
+    background: var(--bg);
+    border-radius: 4px;
+    height: 28px;
+    overflow: hidden;
+  }
+  .funnel-fill {
+    height: 100%;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    color: white;
+    transition: width .7s cubic-bezier(.4,0,.2,1);
+    min-width: 36px;
+  }
+  .funnel-n   { font-size: 13px; font-weight: 600; color: var(--text); min-width: 40px; text-align: right; }
+  .funnel-pct { font-size: 11px; color: var(--text-3); min-width: 56px; text-align: right; }
+
+  /* ── GRID 2 COLS ── */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media(max-width:640px){ .grid2{ grid-template-columns:1fr; } .metrics-grid{ grid-template-columns:1fr 1fr; } }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+  }
+  .chart-wrap { position: relative; width: 100%; }
+
+  /* ── VENDEDOR ── */
+  .seller-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1rem;
+    padding-bottom: .75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .avatar {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .av-blue { background: var(--blue-bg); color: var(--blue); }
+  .av-amber{ background: var(--amber-bg); color: var(--amber); }
+  .seller-name { font-size: 14px; font-weight: 600; color: var(--text); }
+  .seller-region { font-size: 11px; color: var(--text-3); }
+
+  .kpi-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .kpi-row:last-child { border-bottom: none; }
+  .kpi-key { color: var(--text-2); }
+  .kpi-val { font-weight: 500; color: var(--text); display: flex; align-items: center; gap: 6px; }
+  .pill {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 20px;
+  }
+  .p-green  { background: var(--green-bg);  color: var(--green); }
+  .p-amber  { background: var(--amber-bg);  color: var(--amber); }
+  .p-gray   { background: var(--gray-bg);   color: var(--gray);  }
+  .p-red    { background: var(--danger-bg); color: var(--danger);}
+
+  /* ── LOADING / ERROR ── */
+  .state-msg {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-3);
+    font-size: 13px;
+  }
+  .spinner {
+    width: 24px; height: 24px;
+    border: 2px solid var(--border);
+    border-top-color: var(--red);
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+    margin: 0 auto 12px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── FOOTER ── */
+  .footer {
+    margin-top: 2rem;
+    padding: 1rem 0;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--text-3);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  code {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 11px;
+    font-family: monospace;
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-brand">
+    <div class="brand-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2L4 7v10l8 5 8-5V7L12 2z"/></svg>
+    </div>
+    <div>
+      <span class="brand-name">Platina Extintores</span>
+      <span class="brand-sub">Carteira</span>
+    </div>
+  </div>
+  <div class="header-right">
+    <span class="last-update" id="last-update">—</span>
+    <button class="btn-refresh" onclick="loadData()">
+      <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      Atualizar
+    </button>
+  </div>
+</header>
+
+<main class="main">
+
+  <div class="filters">
+    <span class="filter-label">Período:</span>
+    <select class="filter-select" id="filter-period" onchange="loadData()">
+      <option value="all">Toda a base</option>
+      <option value="30">Últimos 30 dias</option>
+      <option value="60">Últimos 60 dias</option>
+      <option value="90">Últimos 90 dias</option>
+    </select>
+    <span class="filter-label">Vendedor:</span>
+    <select class="filter-select" id="filter-seller" onchange="loadData()">
+      <option value="all">Todos</option>
+      <option value="1943">Ronaldo (1943)</option>
+      <option value="8206">David (8206)</option>
+    </select>
+    <span class="badge-live"><span class="dot-live"></span>Tempo real</span>
+  </div>
+
+  <div id="app-content">
+    <div class="state-msg"><div class="spinner"></div>Carregando dados...</div>
+  </div>
+
+</main>
+
+<script>
+/* ══════════════════════════════════════════════
+   CONFIGURAÇÃO — substitua os dois valores abaixo
+   Acesse: Supabase → Settings → API
+   ══════════════════════════════════════════════ */
+const SUPABASE_URL      = 'https://SEU_PROJETO.supabase.co';
+const SUPABASE_ANON_KEY = 'SUA_CHAVE_ANON_PUBLICA';
+
+/* ══════════════════════════════════════════════
+   MODO DEMO — remove quando conectar ao Supabase
+   ══════════════════════════════════════════════ */
+const DEMO_MODE = SUPABASE_URL.includes('SEU_PROJETO');
+
+const DEMO_DATA = [
+  ...Array.from({length:210}, (_,i) => ({
+    codigo_vendedor:'1943',
+    status: i<6?'vendido': i<18?'qualificado': i<44?'enviado': i<60?'perdido':'expirado',
+    follow_count: Math.min(4, Math.floor(Math.random()*5)),
+    data_disparo: new Date(Date.now() - Math.random()*60*86400000).toISOString()
+  })),
+  ...Array.from({length:166}, (_,i) => ({
+    codigo_vendedor:'8206',
+    status: i<3?'vendido': i<11?'qualificado': i<32?'enviado': i<45?'perdido':'expirado',
+    follow_count: Math.min(4, Math.floor(Math.random()*5)),
+    data_disparo: new Date(Date.now() - Math.random()*60*86400000).toISOString()
+  }))
+];
+
+let chartTrend = null;
+let chartSellers = null;
+
+async function fetchContacts(periodDays, seller) {
+  if (DEMO_MODE) {
+    let rows = DEMO_DATA;
+    if (seller !== 'all') rows = rows.filter(r => r.codigo_vendedor === seller);
+    if (periodDays !== 'all') {
+      const cutoff = new Date(Date.now() - Number(periodDays)*86400000).toISOString();
+      rows = rows.filter(r => r.data_disparo >= cutoff);
+    }
+    return rows;
+  }
+
+  let url = `${SUPABASE_URL}/rest/v1/contacts?select=status,follow_count,codigo_vendedor,data_disparo`;
+  const filters = [];
+  if (seller !== 'all') filters.push(`codigo_vendedor=eq.${seller}`);
+  if (periodDays !== 'all') {
+    const cutoff = new Date(Date.now() - Number(periodDays)*86400000).toISOString();
+    filters.push(`data_disparo=gte.${cutoff}`);
+  }
+  if (filters.length) url += '&' + filters.join('&');
+
+  const res = await fetch(url, {
+    headers: {
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+    }
+  });
+  if (!res.ok) throw new Error(`Supabase: ${res.status}`);
+  return res.json();
+}
+
+function calcMetrics(rows) {
+  const total     = rows.length;
+  const engajados = rows.filter(r => ['enviado','qualificado','vendido','perdido','expirado'].includes(r.status) && r.follow_count > 0 || r.status === 'qualificado' || r.status === 'vendido').length;
+  const qualif    = rows.filter(r => r.status === 'qualificado' || r.status === 'vendido').length;
+  const vendidos  = rows.filter(r => r.status === 'vendido').length;
+  const perdidos  = rows.filter(r => r.status === 'perdido' || r.status === 'expirado').length;
+
+  const byFollowup = [0,1,2,3,4].map(n => ({
+    eng:  rows.filter(r => r.follow_count === n && (r.status === 'qualificado' || r.status === 'vendido')).length,
+    qual: rows.filter(r => r.follow_count === n && (r.status === 'qualificado' || r.status === 'vendido')).length,
+    vend: rows.filter(r => r.follow_count === n && r.status === 'vendido').length,
+  }));
+
+  const bySeller = ['1943','8206'].map(cod => {
+    const sub = rows.filter(r => r.codigo_vendedor === cod);
+    return {
+      cod,
+      disp:  sub.length,
+      eng:   sub.filter(r => r.follow_count > 0 || r.status === 'qualificado' || r.status === 'vendido').length,
+      qual:  sub.filter(r => r.status === 'qualificado' || r.status === 'vendido').length,
+      vend:  sub.filter(r => r.status === 'vendido').length,
+      perd:  sub.filter(r => r.status === 'perdido' || r.status === 'expirado').length,
+    };
+  });
+
+  return { total, engajados, qualif, vendidos, perdidos, byFollowup, bySeller };
+}
+
+function pct(a, b) { return b ? (a/b*100).toFixed(1)+'%' : '—'; }
+function dpv(d, v) { return v ? Math.round(d/v) : '—'; }
+
+function renderPill(text, cls) { return `<span class="pill ${cls}">${text}</span>`; }
+
+function buildCharts(m) {
+  const labels = ['Disparo inicial','Follow-up 1','Follow-up 2','Follow-up 3','Follow-up 4'];
+  const engData  = m.byFollowup.map(f => f.eng);
+  const qualData = m.byFollowup.map(f => f.qual);
+  const vendData = m.byFollowup.map(f => f.vend);
+
+  if (chartTrend) chartTrend.destroy();
+  chartTrend = new Chart(document.getElementById('chartTrend'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label:'Engajados',      data: engData,  backgroundColor:'#378ADD55', borderColor:'#378ADD', borderWidth:1.5 },
+        { label:'Qualificados',   data: qualData, backgroundColor:'#BA751755', borderColor:'#BA7517', borderWidth:1.5 },
+        { label:'Vendas fechadas',data: vendData, backgroundColor:'#1D9E7555', borderColor:'#1D9E75', borderWidth:1.5 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color:'#9C9A92', font:{size:11} }, grid: { color:'rgba(0,0,0,.06)' } },
+        y: { ticks: { color:'#9C9A92', font:{size:11} }, grid: { color:'rgba(0,0,0,.06)' }, beginAtZero:true }
+      }
+    }
+  });
+
+  const s = m.bySeller;
+  if (chartSellers) chartSellers.destroy();
+  chartSellers = new Chart(document.getElementById('chartSellers'), {
+    type: 'bar',
+    data: {
+      labels: ['Disparados','Engajados','Qualificados','Vendas'],
+      datasets: [
+        { label:'Ronaldo (1943)', data:[s[0].disp,s[0].eng,s[0].qual,s[0].vend], backgroundColor:'#185FA555', borderColor:'#185FA5', borderWidth:1.5 },
+        { label:'David (8206)',   data:[s[1].disp,s[1].eng,s[1].qual,s[1].vend], backgroundColor:'#BA751755', borderColor:'#BA7517', borderWidth:1.5 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks:{color:'#9C9A92',font:{size:11}}, grid:{color:'rgba(0,0,0,.06)'} },
+        y: { ticks:{color:'#9C9A92',font:{size:11}}, grid:{color:'rgba(0,0,0,.06)'}, beginAtZero:true }
+      }
+    }
+  });
+}
+
+function renderLegend(id, items) {
+  document.getElementById(id).innerHTML = items.map(([c,l]) =>
+    `<span style="display:flex;align-items:center;gap:5px">
+      <span style="width:10px;height:10px;border-radius:2px;background:${c}"></span>
+      <span style="font-size:12px;color:#5F5E5A">${l}</span>
+    </span>`
+  ).join('');
+}
+
+function renderApp(m) {
+  const s = m.bySeller;
+  const sellerInfo = {
+    '1943': { name:'Ronaldo', region:'DDD 11 · raio 100km de Sorocaba', av:'RO', avcls:'av-blue' },
+    '8206': { name:'David',   region:'DDD 15 · Sorocaba e Votorantim',  av:'DA', avcls:'av-amber' }
+  };
+
+  const funnel = [
+    { label:'Disparados',         n: m.total,     base: m.total,     color:'#378ADD' },
+    { label:'Engajados',          n: m.engajados, base: m.total,     color:'#1D9E75' },
+    { label:'Qualificados',       n: m.qualif,    base: m.total,     color:'#BA7517' },
+    { label:'Vendas fechadas',    n: m.vendidos,  base: m.total,     color:'#639922' },
+    { label:'Perdidos / expirados',n: m.perdidos, base: m.total,     color:'#E24B4A' },
+  ];
+
+  document.getElementById('app-content').innerHTML = `
+
+    <div class="metrics-grid">
+      <div class="metric">
+        <div class="metric-label">Disparados</div>
+        <div class="metric-value">${m.total}</div>
+        <div class="metric-sub">total da campanha</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Engajados</div>
+        <div class="metric-value">${m.engajados}</div>
+        <div class="metric-sub">${pct(m.engajados,m.total)} dos disparados</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Qualificados</div>
+        <div class="metric-value">${m.qualif}</div>
+        <div class="metric-sub">${pct(m.qualif,m.engajados)} dos engajados</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Vendas fechadas</div>
+        <div class="metric-value">${m.vendidos}</div>
+        <div class="metric-sub">${pct(m.vendidos,m.qualif)} dos qualificados</div>
+      </div>
+      <div class="metric highlight">
+        <div class="metric-label">Disparos por venda</div>
+        <div class="metric-value green">${dpv(m.total,m.vendidos)}</div>
+        <div class="metric-sub">KPI de eficiência</div>
+      </div>
+      <div class="metric highlight-warn">
+        <div class="metric-label">Perdidos / expirados</div>
+        <div class="metric-value red">${m.perdidos}</div>
+        <div class="metric-sub">${pct(m.perdidos,m.total)} dos disparados</div>
+      </div>
+    </div>
+
+    <div class="section-title">Funil de conversão</div>
+    <div class="funnel-card">
+      ${funnel.map(f => {
+        const w = m.total ? Math.max(3, Math.round(f.n/f.base*100)) : 3;
+        return `<div class="funnel-row">
+          <span class="funnel-name">${f.label}</span>
+          <div class="funnel-track">
+            <div class="funnel-fill" style="width:${w}%;background:${f.color}">${pct(f.n,f.base)}</div>
+          </div>
+          <span class="funnel-n">${f.n}</span>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <div class="section-title">Resultado por follow-up</div>
+    <div class="card" style="margin-bottom:1rem">
+      <div class="chart-wrap" style="height:220px"><canvas id="chartTrend" role="img" aria-label="Resultados por etapa de follow-up">Engajados, qualificados e vendas por follow-up.</canvas></div>
+    </div>
+    <div id="legend-trend" style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:1.5rem"></div>
+
+    <div class="section-title">Desempenho por vendedor</div>
+    <div class="grid2" style="margin-bottom:1rem">
+      ${['1943','8206'].map((cod,i) => {
+        const sv = s[i];
+        const si = sellerInfo[cod];
+        return `<div class="card">
+          <div class="seller-header">
+            <div class="avatar ${si.avcls}">${si.av}</div>
+            <div>
+              <div class="seller-name">${si.name}</div>
+              <div class="seller-region">${si.region}</div>
+            </div>
+          </div>
+          <div class="kpi-row"><span class="kpi-key">Disparados</span><span class="kpi-val">${sv.disp}</span></div>
+          <div class="kpi-row"><span class="kpi-key">Engajados</span><span class="kpi-val">${sv.eng} ${renderPill(pct(sv.eng,sv.disp),'p-gray')}</span></div>
+          <div class="kpi-row"><span class="kpi-key">Qualificados</span><span class="kpi-val">${sv.qual} ${renderPill(pct(sv.qual,sv.eng),'p-amber')}</span></div>
+          <div class="kpi-row"><span class="kpi-key">Vendas fechadas</span><span class="kpi-val">${sv.vend} ${renderPill(pct(sv.vend,sv.qual),'p-green')}</span></div>
+          <div class="kpi-row"><span class="kpi-key">Disparos/venda</span><span class="kpi-val" style="color:var(--green);font-weight:600">${dpv(sv.disp,sv.vend)}</span></div>
+          <div class="kpi-row"><span class="kpi-key">Perdidos/expirados</span><span class="kpi-val">${sv.perd} ${renderPill(pct(sv.perd,sv.disp),'p-red')}</span></div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="card" style="margin-bottom:.5rem">
+      <div class="chart-wrap" style="height:200px"><canvas id="chartSellers" role="img" aria-label="Comparativo entre vendedores">Comparativo Ronaldo vs David.</canvas></div>
+    </div>
+    <div id="legend-sellers" style="display:flex;gap:16px;margin-bottom:2rem"></div>
+
+    <div class="footer">
+      <span>Dados lidos em tempo real via API Supabase · tabela <code>contacts</code></span>
+      <span id="demo-note" style="color:var(--amber)">${DEMO_MODE ? '⚠ Modo demo — substitua SUPABASE_URL e SUPABASE_ANON_KEY no arquivo index.html' : ''}</span>
+    </div>
+  `;
+
+  buildCharts(m);
+  renderLegend('legend-trend',   [['#378ADD','Engajados'],['#BA7517','Qualificados'],['#1D9E75','Vendas fechadas']]);
+  renderLegend('legend-sellers', [['#185FA5','Ronaldo (1943)'],['#BA7517','David (8206)']]);
+}
+
+async function loadData() {
+  const period = document.getElementById('filter-period')?.value || 'all';
+  const seller = document.getElementById('filter-seller')?.value || 'all';
+
+  try {
+    const rows = await fetchContacts(period, seller);
+    const m = calcMetrics(rows);
+    renderApp(m);
+    document.getElementById('last-update').textContent =
+      'Atualizado ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+  } catch(e) {
+    document.getElementById('app-content').innerHTML =
+      `<div class="state-msg">Erro ao carregar dados: ${e.message}<br><br>
+       Verifique SUPABASE_URL e SUPABASE_ANON_KEY no arquivo index.html</div>`;
+  }
+}
+
+loadData();
+</script>
+</body>
+</html>
