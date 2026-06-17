@@ -6,311 +6,230 @@
 <title>Dashboard Carteira · Platina Extintores</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
-  /* ── CONFIG: substitua os dois valores abaixo ── */
-  /* SUPABASE_URL e SUPABASE_ANON_KEY estão no JS abaixo */
-
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --red:      #C0392B;
-    --red-light:#FAECE7;
-    --dark:     #1A1A2E;
-    --green:    #1D9E75;
-    --green-bg: #E1F5EE;
-    --amber:    #BA7517;
-    --amber-bg: #FAEEDA;
-    --blue:     #185FA5;
-    --blue-bg:  #E6F1FB;
-    --gray:     #5F5E5A;
-    --gray-bg:  #F1EFE8;
-    --border:   #E0DED7;
-    --bg:       #F7F6F2;
-    --surface:  #FFFFFF;
-    --text:     #1A1A2E;
-    --text-2:   #5F5E5A;
-    --text-3:   #9C9A92;
-    --danger:   #E24B4A;
-    --danger-bg:#FCEBEB;
-    --radius:   10px;
-    --radius-sm:6px;
-  }
-
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    font-size: 14px;
-    line-height: 1.5;
-    min-height: 100vh;
-  }
-
-  /* ── HEADER ── */
-  .header {
-    background: var(--dark);
-    padding: 0 2rem;
-    height: 56px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  .header-brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .brand-icon {
-    width: 28px;
-    height: 28px;
-    background: var(--red);
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .brand-icon svg { width: 16px; height: 16px; fill: white; }
-  .brand-name { font-size: 14px; font-weight: 600; color: white; letter-spacing: .02em; }
-  .brand-sub  { font-size: 11px; color: rgba(255,255,255,.45); margin-left: 2px; }
-  .header-right { display: flex; align-items: center; gap: 12px; }
-  .last-update { font-size: 11px; color: rgba(255,255,255,.4); }
-  .btn-refresh {
-    background: rgba(255,255,255,.1);
-    border: 1px solid rgba(255,255,255,.15);
-    color: white;
-    border-radius: var(--radius-sm);
-    padding: 5px 12px;
-    font-size: 12px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: background .15s;
-  }
-  .btn-refresh:hover { background: rgba(255,255,255,.18); }
-  .btn-refresh svg { width: 13px; height: 13px; fill: none; stroke: white; stroke-width: 2; }
-
-  /* ── LAYOUT ── */
-  .main { max-width: 1100px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
-
-  /* ── FILTROS ── */
-  .filters {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 1.25rem;
-    flex-wrap: wrap;
-  }
-  .filter-label { font-size: 12px; color: var(--text-2); }
-  .filter-select {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 6px 10px;
-    font-size: 12px;
-    color: var(--text);
-    cursor: pointer;
-  }
-  .filter-select:focus { outline: none; border-color: var(--red); }
-  .badge-live {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    background: var(--green-bg);
-    color: var(--green);
-    border-radius: 20px;
-    padding: 4px 10px;
-    font-size: 11px;
-    font-weight: 500;
-    margin-left: auto;
-  }
-  .dot-live {
-    width: 7px; height: 7px;
-    background: var(--green);
-    border-radius: 50%;
-    animation: pulse 2s ease-in-out infinite;
-  }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
-
-  /* ── MÉTRICAS ── */
-  .metrics-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 10px;
-    margin-bottom: 1.5rem;
-  }
-  .metric {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: .875rem 1rem;
-  }
-  .metric.highlight { border-left: 3px solid var(--green); }
-  .metric.highlight-warn { border-left: 3px solid var(--danger); }
-  .metric-label { font-size: 11px; color: var(--text-3); font-weight: 500; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
-  .metric-value { font-size: 28px; font-weight: 600; color: var(--text); line-height: 1; margin-bottom: 4px; }
-  .metric-value.green { color: var(--green); }
-  .metric-value.red   { color: var(--danger); }
-  .metric-sub { font-size: 11px; color: var(--text-3); }
-
-  /* ── SEÇÕES ── */
-  .section-title {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text-3);
-    text-transform: uppercase;
-    letter-spacing: .07em;
-    margin-bottom: .75rem;
-    margin-top: 1.75rem;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .section-title::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
-
-  /* ── FUNIL ── */
-  .funnel-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 1.25rem 1.5rem;
-    margin-bottom: 1rem;
-  }
-  .funnel-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 10px;
-  }
-  .funnel-row:last-child { margin-bottom: 0; }
-  .funnel-name { font-size: 12px; color: var(--text-2); min-width: 130px; }
-  .funnel-track {
-    flex: 1;
-    background: var(--bg);
-    border-radius: 4px;
-    height: 28px;
-    overflow: hidden;
-  }
-  .funnel-fill {
-    height: 100%;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    padding-left: 10px;
-    font-size: 11px;
-    font-weight: 600;
-    color: white;
-    transition: width .7s cubic-bezier(.4,0,.2,1);
-    min-width: 36px;
-  }
-  .funnel-n   { font-size: 13px; font-weight: 600; color: var(--text); min-width: 40px; text-align: right; }
-  .funnel-pct { font-size: 11px; color: var(--text-3); min-width: 56px; text-align: right; }
-
-  /* ── GRID 2 COLS ── */
-  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-  @media(max-width:640px){ .grid2{ grid-template-columns:1fr; } .metrics-grid{ grid-template-columns:1fr 1fr; } }
-
-  /* ── CARDS ── */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 1.25rem;
-  }
-  .chart-wrap { position: relative; width: 100%; }
-
-  /* ── VENDEDOR ── */
-  .seller-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 1rem;
-    padding-bottom: .75rem;
-    border-bottom: 1px solid var(--border);
-  }
-  .avatar {
-    width: 38px; height: 38px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 13px;
-    font-weight: 600;
-  }
-  .av-blue { background: var(--blue-bg); color: var(--blue); }
-  .av-amber{ background: var(--amber-bg); color: var(--amber); }
-  .seller-name { font-size: 14px; font-weight: 600; color: var(--text); }
-  .seller-region { font-size: 11px; color: var(--text-3); }
-
-  .kpi-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 6px 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 13px;
-  }
-  .kpi-row:last-child { border-bottom: none; }
-  .kpi-key { color: var(--text-2); }
-  .kpi-val { font-weight: 500; color: var(--text); display: flex; align-items: center; gap: 6px; }
-  .pill {
-    font-size: 10px;
-    font-weight: 600;
-    padding: 2px 7px;
-    border-radius: 20px;
-  }
-  .p-green  { background: var(--green-bg);  color: var(--green); }
-  .p-amber  { background: var(--amber-bg);  color: var(--amber); }
-  .p-gray   { background: var(--gray-bg);   color: var(--gray);  }
-  .p-red    { background: var(--danger-bg); color: var(--danger);}
-
-  /* ── LOADING / ERROR ── */
-  .state-msg {
-    text-align: center;
-    padding: 3rem;
-    color: var(--text-3);
-    font-size: 13px;
-  }
-  .spinner {
-    width: 24px; height: 24px;
-    border: 2px solid var(--border);
-    border-top-color: var(--red);
-    border-radius: 50%;
-    animation: spin .7s linear infinite;
-    margin: 0 auto 12px;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* ── FOOTER ── */
-  .footer {
-    margin-top: 2rem;
-    padding: 1rem 0;
-    border-top: 1px solid var(--border);
-    font-size: 11px;
-    color: var(--text-3);
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  code {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 1px 5px;
-    font-size: 11px;
-    font-family: monospace;
-  }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --red: #C0392B;
+  --red-light:#FAECE7;
+  --dark: #1A1A2E;
+  --green: #1D9E75;
+  --green-bg: #E1F5EE;
+  --amber: #BA7517;
+  --amber-bg: #FAEEDA;
+  --blue: #185FA5;
+  --blue-bg: #E6F1FB;
+  --purple: #7C3AED;
+  --purple-bg: #EDE9FE;
+  --gray: #5F5E5A;
+  --gray-bg: #F1EFE8;
+  --border: #E0DED7;
+  --bg: #F7F6F2;
+  --surface: #FFFFFF;
+  --text: #1A1A2E;
+  --text-2: #5F5E5A;
+  --text-3: #9C9A92;
+  --danger: #E24B4A;
+  --danger-bg:#FCEBEB;
+  --radius: 10px;
+  --radius-sm:6px;
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+.header {
+  background: var(--dark);
+  padding: 0 2rem;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-brand { display: flex; align-items: center; gap: 10px; }
+.brand-icon {
+  width: 28px; height: 28px;
+  background: var(--red);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+}
+.brand-icon svg { width: 16px; height: 16px; fill: white; }
+.brand-name { font-size: 14px; font-weight: 600; color: white; letter-spacing: .02em; }
+.brand-sub { font-size: 11px; color: rgba(255,255,255,.45); margin-left: 2px; }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.last-update { font-size: 11px; color: rgba(255,255,255,.4); }
+.btn-refresh {
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.15);
+  color: white;
+  border-radius: var(--radius-sm);
+  padding: 5px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 6px;
+  transition: background .15s;
+}
+.btn-refresh:hover { background: rgba(255,255,255,.18); }
+.btn-refresh svg { width: 13px; height: 13px; fill: none; stroke: white; stroke-width: 2; }
+.main { max-width: 1100px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
+.filters {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 1.25rem; flex-wrap: wrap;
+}
+.filter-label { font-size: 12px; color: var(--text-2); }
+.filter-select {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  font-size: 12px;
+  color: var(--text);
+  cursor: pointer;
+}
+.filter-select:focus { outline: none; border-color: var(--red); }
+.badge-live {
+  display: flex; align-items: center; gap: 5px;
+  background: var(--green-bg);
+  color: var(--green);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 11px; font-weight: 500;
+  margin-left: auto;
+}
+.dot-live {
+  width: 7px; height: 7px;
+  background: var(--green);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin-bottom: 1.5rem;
+}
+.metric {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: .875rem 1rem;
+}
+.metric.highlight-blue  { border-left: 3px solid var(--blue); }
+.metric.highlight-green { border-left: 3px solid var(--green); }
+.metric.highlight-warn  { border-left: 3px solid var(--danger); }
+.metric.highlight-amber { border-left: 3px solid var(--amber); }
+.metric.highlight-gray  { border-left: 3px solid var(--gray); }
+.metric.highlight-purple{ border-left: 3px solid var(--purple); }
+.metric-label { font-size: 11px; color: var(--text-3); font-weight: 500; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+.metric-value { font-size: 28px; font-weight: 600; color: var(--text); line-height: 1; margin-bottom: 4px; }
+.metric-value.green  { color: var(--green); }
+.metric-value.blue   { color: var(--blue); }
+.metric-value.red    { color: var(--danger); }
+.metric-value.amber  { color: var(--amber); }
+.metric-value.gray   { color: var(--gray); }
+.metric-value.purple { color: var(--purple); }
+.metric-sub { font-size: 11px; color: var(--text-3); }
+.section-title {
+  font-size: 11px; font-weight: 600;
+  color: var(--text-3);
+  text-transform: uppercase; letter-spacing: .07em;
+  margin-bottom: .75rem; margin-top: 1.75rem;
+  display: flex; align-items: center; gap: 8px;
+}
+.section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.funnel-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1rem;
+}
+.funnel-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.funnel-row:last-child { margin-bottom: 0; }
+.funnel-name { font-size: 12px; color: var(--text-2); min-width: 160px; }
+.funnel-track { flex: 1; background: var(--bg); border-radius: 4px; height: 28px; overflow: hidden; }
+.funnel-fill {
+  height: 100%; border-radius: 4px;
+  display: flex; align-items: center; padding-left: 10px;
+  font-size: 11px; font-weight: 600; color: white;
+  transition: width .7s cubic-bezier(.4,0,.2,1);
+  min-width: 36px;
+}
+.funnel-n { font-size: 13px; font-weight: 600; color: var(--text); min-width: 40px; text-align: right; }
+.funnel-pct { font-size: 11px; color: var(--text-3); min-width: 56px; text-align: right; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+@media(max-width:640px){ .grid2{ grid-template-columns:1fr; } .metrics-grid{ grid-template-columns:1fr 1fr; } }
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+}
+.chart-wrap { position: relative; width: 100%; }
+.seller-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 1rem; padding-bottom: .75rem;
+  border-bottom: 1px solid var(--border);
+}
+.avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 600;
+}
+.av-blue  { background: var(--blue-bg);  color: var(--blue); }
+.av-amber { background: var(--amber-bg); color: var(--amber); }
+.seller-name   { font-size: 14px; font-weight: 600; color: var(--text); }
+.seller-region { font-size: 11px; color: var(--text-3); }
+.kpi-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.kpi-row:last-child { border-bottom: none; }
+.kpi-key { color: var(--text-2); }
+.kpi-val { font-weight: 500; color: var(--text); display: flex; align-items: center; gap: 6px; }
+.pill { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 20px; }
+.p-green  { background: var(--green-bg);  color: var(--green); }
+.p-amber  { background: var(--amber-bg);  color: var(--amber); }
+.p-gray   { background: var(--gray-bg);   color: var(--gray); }
+.p-red    { background: var(--danger-bg); color: var(--danger); }
+.p-blue   { background: var(--blue-bg);   color: var(--blue); }
+.p-purple { background: var(--purple-bg); color: var(--purple); }
+.state-msg { text-align: center; padding: 3rem; color: var(--text-3); font-size: 13px; }
+.spinner {
+  width: 24px; height: 24px;
+  border: 2px solid var(--border);
+  border-top-color: var(--red);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  margin: 0 auto 12px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.footer {
+  margin-top: 2rem; padding: 1rem 0;
+  border-top: 1px solid var(--border);
+  font-size: 11px; color: var(--text-3);
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+}
+code {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 11px;
+  font-family: monospace;
+}
 </style>
 </head>
 <body>
-
 <header class="header">
   <div class="header-brand">
     <div class="brand-icon">
@@ -331,7 +250,6 @@
 </header>
 
 <main class="main">
-
   <div class="filters">
     <span class="filter-label">Período:</span>
     <select class="filter-select" id="filter-period" onchange="loadData()">
@@ -352,60 +270,27 @@
   <div id="app-content">
     <div class="state-msg"><div class="spinner"></div>Carregando dados...</div>
   </div>
-
 </main>
 
 <script>
-/* ══════════════════════════════════════════════
-   CONFIGURAÇÃO — substitua os dois valores abaixo
-   Acesse: Supabase → Settings → API
-   ══════════════════════════════════════════════ */
-const SUPABASE_URL      = 'https://SEU_PROJETO.supabase.co';
-const SUPABASE_ANON_KEY = 'SUA_CHAVE_ANON_PUBLICA';
-
-/* ══════════════════════════════════════════════
-   MODO DEMO — remove quando conectar ao Supabase
-   ══════════════════════════════════════════════ */
-const DEMO_MODE = SUPABASE_URL.includes('SEU_PROJETO');
-
-const DEMO_DATA = [
-  ...Array.from({length:210}, (_,i) => ({
-    codigo_vendedor:'1943',
-    status: i<6?'vendido': i<18?'qualificado': i<44?'enviado': i<60?'perdido':'expirado',
-    follow_count: Math.min(4, Math.floor(Math.random()*5)),
-    data_disparo: new Date(Date.now() - Math.random()*60*86400000).toISOString()
-  })),
-  ...Array.from({length:166}, (_,i) => ({
-    codigo_vendedor:'8206',
-    status: i<3?'vendido': i<11?'qualificado': i<32?'enviado': i<45?'perdido':'expirado',
-    follow_count: Math.min(4, Math.floor(Math.random()*5)),
-    data_disparo: new Date(Date.now() - Math.random()*60*86400000).toISOString()
-  }))
-];
+const SUPABASE_URL  = 'https://qraqfioyecspugrjlyqv.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyYXFmaW95ZWNzcHVncmpseXF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjA3MzYsImV4cCI6MjA5NjgzNjczNn0.6J4gUPWTTfQ4Tn8NPbpdxZ0RoMrcKdGDaJo0tMAUCno';
 
 let chartTrend = null;
 let chartSellers = null;
 
 async function fetchContacts(periodDays, seller) {
-  if (DEMO_MODE) {
-    let rows = DEMO_DATA;
-    if (seller !== 'all') rows = rows.filter(r => r.codigo_vendedor === seller);
-    if (periodDays !== 'all') {
-      const cutoff = new Date(Date.now() - Number(periodDays)*86400000).toISOString();
-      rows = rows.filter(r => r.data_disparo >= cutoff);
-    }
-    return rows;
-  }
-
-  let url = `${SUPABASE_URL}/rest/v1/contacts?select=status,follow_count,codigo_vendedor,data_disparo`;
+  let url = `${SUPABASE_URL}/rest/v1/contacts?select=status,follow_count,vendedor_nome,data_disparo,codigo_cliente`;
   const filters = [];
-  if (seller !== 'all') filters.push(`codigo_vendedor=eq.${seller}`);
+  if (seller !== 'all') {
+    if (seller === '1943') filters.push(`vendedor_nome=eq.RONALDO`);
+    if (seller === '8206') filters.push(`vendedor_nome=eq.DAVID%20FAGUNDES`);
+  }
   if (periodDays !== 'all') {
     const cutoff = new Date(Date.now() - Number(periodDays)*86400000).toISOString();
     filters.push(`data_disparo=gte.${cutoff}`);
   }
   if (filters.length) url += '&' + filters.join('&');
-
   const res = await fetch(url, {
     headers: {
       'apikey': SUPABASE_ANON_KEY,
@@ -417,43 +302,60 @@ async function fetchContacts(periodDays, seller) {
 }
 
 function calcMetrics(rows) {
-  const total     = rows.length;
-  const engajados = rows.filter(r => ['enviado','qualificado','vendido','perdido','expirado'].includes(r.status) && r.follow_count > 0 || r.status === 'qualificado' || r.status === 'vendido').length;
-  const qualif    = rows.filter(r => r.status === 'qualificado' || r.status === 'vendido').length;
-  const vendidos  = rows.filter(r => r.status === 'vendido').length;
-  const perdidos  = rows.filter(r => r.status === 'perdido' || r.status === 'expirado').length;
+  const total      = rows.length;
+  // Disparados = qualquer registro que já saiu de pendente
+  const disparados = rows.filter(r => r.status !== 'pendente').length;
+  // Engajados = cliente respondeu (handoff feito)
+  const engajados  = rows.filter(r => r.status === 'respondido').length;
+  // Bounce = falha de entrega
+  const bounces    = rows.filter(r => r.status === 'bounce').length;
+  // Não respondidos = expirado (passou por todos os FUPs sem resposta)
+  const naoResp    = rows.filter(r => r.status === 'expirado').length;
+  // Perdidos = marcado manualmente como perdido
+  const perdidos   = rows.filter(r => r.status === 'perdido').length;
+  // Em andamento = ainda no fluxo (enviado)
+  const emAndamento = rows.filter(r => r.status === 'enviado').length;
 
+  // Por follow-up: quantos engajaram em cada etapa
   const byFollowup = [0,1,2,3,4].map(n => ({
-    eng:  rows.filter(r => r.follow_count === n && (r.status === 'qualificado' || r.status === 'vendido')).length,
-    qual: rows.filter(r => r.follow_count === n && (r.status === 'qualificado' || r.status === 'vendido')).length,
-    vend: rows.filter(r => r.follow_count === n && r.status === 'vendido').length,
+    n,
+    disparados: rows.filter(r => r.follow_count === n && r.status !== 'pendente').length,
+    engajados:  rows.filter(r => r.follow_count === n && r.status === 'respondido').length,
+    bounces:    rows.filter(r => r.follow_count === n && r.status === 'bounce').length,
   }));
 
+  // Por vendedor (usando vendedor_nome)
+  const sellerMap = {
+    '1943': 'RONALDO',
+    '8206': 'DAVID FAGUNDES',
+  };
   const bySeller = ['1943','8206'].map(cod => {
-    const sub = rows.filter(r => r.codigo_vendedor === cod);
+    const nome = sellerMap[cod];
+    const sub  = rows.filter(r => r.vendedor_nome === nome);
     return {
       cod,
-      disp:  sub.length,
-      eng:   sub.filter(r => r.follow_count > 0 || r.status === 'qualificado' || r.status === 'vendido').length,
-      qual:  sub.filter(r => r.status === 'qualificado' || r.status === 'vendido').length,
-      vend:  sub.filter(r => r.status === 'vendido').length,
-      perd:  sub.filter(r => r.status === 'perdido' || r.status === 'expirado').length,
+      total:      sub.length,
+      disparados: sub.filter(r => r.status !== 'pendente').length,
+      engajados:  sub.filter(r => r.status === 'respondido').length,
+      bounces:    sub.filter(r => r.status === 'bounce').length,
+      naoResp:    sub.filter(r => r.status === 'expirado').length,
+      perdidos:   sub.filter(r => r.status === 'perdido').length,
+      emAndamento:sub.filter(r => r.status === 'enviado').length,
     };
   });
 
-  return { total, engajados, qualif, vendidos, perdidos, byFollowup, bySeller };
+  return { total, disparados, engajados, bounces, naoResp, perdidos, emAndamento, byFollowup, bySeller };
 }
 
 function pct(a, b) { return b ? (a/b*100).toFixed(1)+'%' : '—'; }
 function dpv(d, v) { return v ? Math.round(d/v) : '—'; }
-
 function renderPill(text, cls) { return `<span class="pill ${cls}">${text}</span>`; }
 
 function buildCharts(m) {
-  const labels = ['Disparo inicial','Follow-up 1','Follow-up 2','Follow-up 3','Follow-up 4'];
-  const engData  = m.byFollowup.map(f => f.eng);
-  const qualData = m.byFollowup.map(f => f.qual);
-  const vendData = m.byFollowup.map(f => f.vend);
+  const labels = ['Disparo inicial','FUP 1','FUP 2','FUP 3','FUP 4'];
+  const engData  = m.byFollowup.map(f => f.engajados);
+  const bncData  = m.byFollowup.map(f => f.bounces);
+  const dispData = m.byFollowup.map(f => f.disparados);
 
   if (chartTrend) chartTrend.destroy();
   chartTrend = new Chart(document.getElementById('chartTrend'), {
@@ -461,9 +363,9 @@ function buildCharts(m) {
     data: {
       labels,
       datasets: [
-        { label:'Engajados',      data: engData,  backgroundColor:'#378ADD55', borderColor:'#378ADD', borderWidth:1.5 },
-        { label:'Qualificados',   data: qualData, backgroundColor:'#BA751755', borderColor:'#BA7517', borderWidth:1.5 },
-        { label:'Vendas fechadas',data: vendData, backgroundColor:'#1D9E7555', borderColor:'#1D9E75', borderWidth:1.5 },
+        { label:'Disparados',  data: dispData, backgroundColor:'#378ADD55', borderColor:'#378ADD', borderWidth:1.5 },
+        { label:'Engajados',   data: engData,  backgroundColor:'#1D9E7555', borderColor:'#1D9E75', borderWidth:1.5 },
+        { label:'Bounce',      data: bncData,  backgroundColor:'#E24B4A55', borderColor:'#E24B4A', borderWidth:1.5 },
       ]
     },
     options: {
@@ -481,10 +383,10 @@ function buildCharts(m) {
   chartSellers = new Chart(document.getElementById('chartSellers'), {
     type: 'bar',
     data: {
-      labels: ['Disparados','Engajados','Qualificados','Vendas'],
+      labels: ['Disparados','Engajados','Bounce','Não respondidos','Perdidos'],
       datasets: [
-        { label:'Ronaldo (1943)', data:[s[0].disp,s[0].eng,s[0].qual,s[0].vend], backgroundColor:'#185FA555', borderColor:'#185FA5', borderWidth:1.5 },
-        { label:'David (8206)',   data:[s[1].disp,s[1].eng,s[1].qual,s[1].vend], backgroundColor:'#BA751755', borderColor:'#BA7517', borderWidth:1.5 },
+        { label:'Ronaldo (1943)', data:[s[0].disparados,s[0].engajados,s[0].bounces,s[0].naoResp,s[0].perdidos], backgroundColor:'#185FA555', borderColor:'#185FA5', borderWidth:1.5 },
+        { label:'David (8206)',   data:[s[1].disparados,s[1].engajados,s[1].bounces,s[1].naoResp,s[1].perdidos], backgroundColor:'#BA751755', borderColor:'#BA7517', borderWidth:1.5 },
       ]
     },
     options: {
@@ -515,52 +417,57 @@ function renderApp(m) {
   };
 
   const funnel = [
-    { label:'Disparados',         n: m.total,     base: m.total,     color:'#378ADD' },
-    { label:'Engajados',          n: m.engajados, base: m.total,     color:'#1D9E75' },
-    { label:'Qualificados',       n: m.qualif,    base: m.total,     color:'#BA7517' },
-    { label:'Vendas fechadas',    n: m.vendidos,  base: m.total,     color:'#639922' },
-    { label:'Perdidos / expirados',n: m.perdidos, base: m.total,     color:'#E24B4A' },
+    { label:'Disparados',         n: m.disparados,  base: m.disparados, color:'#378ADD' },
+    { label:'Engajados (responderam)', n: m.engajados, base: m.disparados, color:'#1D9E75' },
+    { label:'Não respondidos',    n: m.naoResp,     base: m.disparados, color:'#9C9A92' },
+    { label:'Perdidos',           n: m.perdidos,    base: m.disparados, color:'#BA7517' },
+    { label:'Bounce (falha)',     n: m.bounces,     base: m.disparados, color:'#E24B4A' },
+    { label:'Em andamento',       n: m.emAndamento, base: m.disparados, color:'#7C3AED' },
   ];
 
   document.getElementById('app-content').innerHTML = `
-
     <div class="metrics-grid">
-      <div class="metric">
+      <div class="metric highlight-blue">
         <div class="metric-label">Disparados</div>
-        <div class="metric-value">${m.total}</div>
+        <div class="metric-value blue">${m.disparados}</div>
         <div class="metric-sub">total da campanha</div>
       </div>
-      <div class="metric">
+      <div class="metric highlight-green">
         <div class="metric-label">Engajados</div>
-        <div class="metric-value">${m.engajados}</div>
-        <div class="metric-sub">${pct(m.engajados,m.total)} dos disparados</div>
+        <div class="metric-value green">${m.engajados}</div>
+        <div class="metric-sub">${pct(m.engajados,m.disparados)} dos disparados</div>
       </div>
-      <div class="metric">
-        <div class="metric-label">Qualificados</div>
-        <div class="metric-value">${m.qualif}</div>
-        <div class="metric-sub">${pct(m.qualif,m.engajados)} dos engajados</div>
+      <div class="metric highlight-purple">
+        <div class="metric-label">Em andamento</div>
+        <div class="metric-value purple">${m.emAndamento}</div>
+        <div class="metric-sub">no fluxo de FUPs</div>
       </div>
-      <div class="metric">
-        <div class="metric-label">Vendas fechadas</div>
-        <div class="metric-value">${m.vendidos}</div>
-        <div class="metric-sub">${pct(m.vendidos,m.qualif)} dos qualificados</div>
+      <div class="metric highlight-gray">
+        <div class="metric-label">Não respondidos</div>
+        <div class="metric-value gray">${m.naoResp}</div>
+        <div class="metric-sub">${pct(m.naoResp,m.disparados)} dos disparados</div>
       </div>
-      <div class="metric highlight">
-        <div class="metric-label">Disparos por venda</div>
-        <div class="metric-value green">${dpv(m.total,m.vendidos)}</div>
-        <div class="metric-sub">KPI de eficiência</div>
+      <div class="metric highlight-amber">
+        <div class="metric-label">Perdidos</div>
+        <div class="metric-value amber">${m.perdidos}</div>
+        <div class="metric-sub">${pct(m.perdidos,m.disparados)} dos disparados</div>
       </div>
       <div class="metric highlight-warn">
-        <div class="metric-label">Perdidos / expirados</div>
-        <div class="metric-value red">${m.perdidos}</div>
-        <div class="metric-sub">${pct(m.perdidos,m.total)} dos disparados</div>
+        <div class="metric-label">Bounce</div>
+        <div class="metric-value red">${m.bounces}</div>
+        <div class="metric-sub">${pct(m.bounces,m.disparados)} — falha de entrega</div>
+      </div>
+      <div class="metric highlight-green">
+        <div class="metric-label">Disparos até handoff</div>
+        <div class="metric-value green">${dpv(m.disparados,m.engajados)}</div>
+        <div class="metric-sub">KPI de eficiência</div>
       </div>
     </div>
 
-    <div class="section-title">Funil de conversão</div>
+    <div class="section-title">Funil da campanha</div>
     <div class="funnel-card">
       ${funnel.map(f => {
-        const w = m.total ? Math.max(3, Math.round(f.n/f.base*100)) : 3;
+        const w = m.disparados ? Math.max(3, Math.round(f.n/f.base*100)) : 3;
         return `<div class="funnel-row">
           <span class="funnel-name">${f.label}</span>
           <div class="funnel-track">
@@ -571,9 +478,9 @@ function renderApp(m) {
       }).join('')}
     </div>
 
-    <div class="section-title">Resultado por follow-up</div>
+    <div class="section-title">Resultado por etapa de follow-up</div>
     <div class="card" style="margin-bottom:1rem">
-      <div class="chart-wrap" style="height:220px"><canvas id="chartTrend" role="img" aria-label="Resultados por etapa de follow-up">Engajados, qualificados e vendas por follow-up.</canvas></div>
+      <div class="chart-wrap" style="height:220px"><canvas id="chartTrend"></canvas></div>
     </div>
     <div id="legend-trend" style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:1.5rem"></div>
 
@@ -590,35 +497,35 @@ function renderApp(m) {
               <div class="seller-region">${si.region}</div>
             </div>
           </div>
-          <div class="kpi-row"><span class="kpi-key">Disparados</span><span class="kpi-val">${sv.disp}</span></div>
-          <div class="kpi-row"><span class="kpi-key">Engajados</span><span class="kpi-val">${sv.eng} ${renderPill(pct(sv.eng,sv.disp),'p-gray')}</span></div>
-          <div class="kpi-row"><span class="kpi-key">Qualificados</span><span class="kpi-val">${sv.qual} ${renderPill(pct(sv.qual,sv.eng),'p-amber')}</span></div>
-          <div class="kpi-row"><span class="kpi-key">Vendas fechadas</span><span class="kpi-val">${sv.vend} ${renderPill(pct(sv.vend,sv.qual),'p-green')}</span></div>
-          <div class="kpi-row"><span class="kpi-key">Disparos/venda</span><span class="kpi-val" style="color:var(--green);font-weight:600">${dpv(sv.disp,sv.vend)}</span></div>
-          <div class="kpi-row"><span class="kpi-key">Perdidos/expirados</span><span class="kpi-val">${sv.perd} ${renderPill(pct(sv.perd,sv.disp),'p-red')}</span></div>
+          <div class="kpi-row"><span class="kpi-key">Disparados</span><span class="kpi-val">${sv.disparados}</span></div>
+          <div class="kpi-row"><span class="kpi-key">Engajados</span><span class="kpi-val">${sv.engajados} ${renderPill(pct(sv.engajados,sv.disparados),'p-green')}</span></div>
+          <div class="kpi-row"><span class="kpi-key">Em andamento</span><span class="kpi-val">${sv.emAndamento} ${renderPill(pct(sv.emAndamento,sv.disparados),'p-blue')}</span></div>
+          <div class="kpi-row"><span class="kpi-key">Não respondidos</span><span class="kpi-val">${sv.naoResp} ${renderPill(pct(sv.naoResp,sv.disparados),'p-gray')}</span></div>
+          <div class="kpi-row"><span class="kpi-key">Perdidos</span><span class="kpi-val">${sv.perdidos} ${renderPill(pct(sv.perdidos,sv.disparados),'p-amber')}</span></div>
+          <div class="kpi-row"><span class="kpi-key">Bounce</span><span class="kpi-val">${sv.bounces} ${renderPill(pct(sv.bounces,sv.disparados),'p-red')}</span></div>
+          <div class="kpi-row"><span class="kpi-key">Disparos até handoff</span><span class="kpi-val" style="color:var(--green);font-weight:600">${dpv(sv.disparados,sv.engajados)}</span></div>
         </div>`;
       }).join('')}
     </div>
+
     <div class="card" style="margin-bottom:.5rem">
-      <div class="chart-wrap" style="height:200px"><canvas id="chartSellers" role="img" aria-label="Comparativo entre vendedores">Comparativo Ronaldo vs David.</canvas></div>
+      <div class="chart-wrap" style="height:200px"><canvas id="chartSellers"></canvas></div>
     </div>
     <div id="legend-sellers" style="display:flex;gap:16px;margin-bottom:2rem"></div>
 
     <div class="footer">
       <span>Dados lidos em tempo real via API Supabase · tabela <code>contacts</code></span>
-      <span id="demo-note" style="color:var(--amber)">${DEMO_MODE ? '⚠ Modo demo — substitua SUPABASE_URL e SUPABASE_ANON_KEY no arquivo index.html' : ''}</span>
     </div>
   `;
 
   buildCharts(m);
-  renderLegend('legend-trend',   [['#378ADD','Engajados'],['#BA7517','Qualificados'],['#1D9E75','Vendas fechadas']]);
+  renderLegend('legend-trend',   [['#378ADD','Disparados'],['#1D9E75','Engajados'],['#E24B4A','Bounce']]);
   renderLegend('legend-sellers', [['#185FA5','Ronaldo (1943)'],['#BA7517','David (8206)']]);
 }
 
 async function loadData() {
   const period = document.getElementById('filter-period')?.value || 'all';
   const seller = document.getElementById('filter-seller')?.value || 'all';
-
   try {
     const rows = await fetchContacts(period, seller);
     const m = calcMetrics(rows);
@@ -627,8 +534,7 @@ async function loadData() {
       'Atualizado ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
   } catch(e) {
     document.getElementById('app-content').innerHTML =
-      `<div class="state-msg">Erro ao carregar dados: ${e.message}<br><br>
-       Verifique SUPABASE_URL e SUPABASE_ANON_KEY no arquivo index.html</div>`;
+      `<div class="state-msg">Erro ao carregar dados: ${e.message}</div>`;
   }
 }
 
