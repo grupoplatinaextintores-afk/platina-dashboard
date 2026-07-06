@@ -154,7 +154,7 @@ code { background: var(--bg); border: 1px solid var(--border); border-radius: 4p
     <span class="filter-label">Período:</span>
     <select class="filter-select" id="filter-period" onchange="onPeriodChange()">
       <option value="all">Toda a base</option>
-      <option value="30">Últimos 30 dias</option>
+      <option value="30" selected>Últimos 30 dias</option>
       <option value="60">Últimos 60 dias</option>
       <option value="90">Últimos 90 dias</option>
       <option value="custom">Personalizado</option>
@@ -227,11 +227,13 @@ function fmtBRL(v) {
 
 function calcMetrics(rows) {
   const total = rows.length;
-  const enviados = rows.filter(r => ['enviado','respondido','expirado','bounce','processando'].includes(r.status)).length;
+  // Enviados = e-mails que efetivamente saíram (excluindo pendente e processando)
+  const enviados = rows.filter(r => ['enviado','respondido','expirado','bounce'].includes(r.status)).length;
   const respondidos = rows.filter(r => r.status === 'respondido').length;
   const bounces = rows.filter(r => r.status === 'bounce').length;
   const expirados = rows.filter(r => r.status === 'expirado').length;
-  const valorTotal = rows.reduce((acc, r) => acc + (parseFloat(r.valor_orcamento) || 0), 0);
+  // valor_orcamento é numeric no Supabase — garantir conversão correta
+  const valorTotal = rows.reduce((acc, r) => acc + (Number(r.valor_orcamento) || 0), 0);
 
   const bySeller = ['DAVID FAGUNDES', 'RONALDO CESAR CAPRINO LEME'].map(nome => {
     const sub = rows.filter(r => r.vendedor_nome === nome);
@@ -242,11 +244,11 @@ function calcMetrics(rows) {
       avcls: nome === 'DAVID FAGUNDES' ? 'av-amber' : 'av-blue',
       region: nome === 'DAVID FAGUNDES' ? 'DDD 15 · Sorocaba e Votorantim' : 'DDD 11 · raio 100km de Sorocaba',
       total: sub.length,
-      enviados: sub.filter(r => ['enviado','respondido','expirado','bounce','processando'].includes(r.status)).length,
+      enviados: sub.filter(r => ['enviado','respondido','expirado','bounce'].includes(r.status)).length,
       respondidos: sub.filter(r => r.status === 'respondido').length,
       bounces: sub.filter(r => r.status === 'bounce').length,
       expirados: sub.filter(r => r.status === 'expirado').length,
-      valor: sub.reduce((acc, r) => acc + (parseFloat(r.valor_orcamento) || 0), 0),
+      valor: sub.reduce((acc, r) => acc + (Number(r.valor_orcamento) || 0), 0),
     };
   });
 
@@ -319,12 +321,14 @@ function renderLegend(id, items) {
 }
 
 function renderApp(m) {
+  const pendentes = m.total - m.enviados - m.bounces;
   const funnel = [
     { label: 'Disparados (total)', n: m.total, base: m.total, color: '#378ADD' },
-    { label: 'E-mails enviados', n: m.enviados, base: m.total, color: '#1D9E75' },
+    { label: 'E-mails entregues', n: m.enviados, base: m.total, color: '#1D9E75' },
+    { label: 'Pendentes / processando', n: Math.max(0, pendentes), base: m.total, color: '#9C9A92' },
+    { label: 'Bounces (falha de entrega)', n: m.bounces, base: m.total, color: '#E24B4A' },
     { label: 'Respondidos', n: m.respondidos, base: m.enviados, color: '#BA7517' },
-    { label: 'Bounces', n: m.bounces, base: m.enviados, color: '#E24B4A' },
-    { label: 'Expirados (sem resposta)', n: m.expirados, base: m.enviados, color: '#9C9A92' },
+    { label: 'Expirados (sem resposta)', n: m.expirados, base: m.enviados, color: '#C4C2BA' },
   ];
 
   document.getElementById('app-content').innerHTML = `
@@ -335,7 +339,7 @@ function renderApp(m) {
         <div class="metric-sub">total da campanha</div>
       </div>
       <div class="metric highlight-blue">
-        <div class="metric-label">E-mails Enviados</div>
+        <div class="metric-label">Enviados (Entregues)</div>
         <div class="metric-value blue">${m.enviados}</div>
         <div class="metric-sub">${pct(m.enviados, m.total)} dos disparados</div>
       </div>
