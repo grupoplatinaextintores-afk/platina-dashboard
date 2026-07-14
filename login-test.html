@@ -2,54 +2,221 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Teste de Login · Platina</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Carteira Platina · Acesso</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  body { font-family: sans-serif; max-width: 320px; margin: 60px auto; }
-  input { width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box; }
-  button { width: 100%; padding: 9px; cursor: pointer; }
-  #result { margin-top: 12px; font-size: 13px; }
+  :root {
+    --bg: #14171a;
+    --surface: #1c2024;
+    --border: #2a2f35;
+    --text: #eef1f3;
+    --text-2: #8f9aa3;
+    --red: #d1453d;
+    --red-dim: rgba(209, 69, 61, 0.15);
+    --warn: #e0a721;
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at 50% 0%, #1a1e22 0%, var(--bg) 60%);
+    font-family: 'Inter', sans-serif;
+    color: var(--text);
+  }
+  .card {
+    width: 100%;
+    max-width: 340px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2rem 1.75rem 1.75rem;
+    box-shadow: 0 20px 50px -20px rgba(0,0,0,0.6);
+  }
+  .gauge {
+    width: 52px; height: 52px;
+    margin: 0 auto 1.1rem;
+    display: block;
+  }
+  .brand {
+    text-align: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: -0.02em;
+    margin: 0;
+  }
+  .brand span { color: var(--red); }
+  .subtitle {
+    text-align: center;
+    font-size: 12.5px;
+    color: var(--text-2);
+    margin: 4px 0 1.75rem;
+    letter-spacing: 0.01em;
+  }
+  .field { margin-bottom: 1rem; }
+  .field label {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+  .field input {
+    width: 100%;
+    padding: 10px 12px;
+    background: #14171a;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    transition: border-color .15s ease;
+  }
+  .field input:focus {
+    outline: none;
+    border-color: var(--red);
+  }
+  .btn {
+    width: 100%;
+    padding: 11px;
+    margin-top: 4px;
+    background: var(--red);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: filter .15s ease, transform .05s ease;
+  }
+  .btn:hover:not(:disabled) { filter: brightness(1.1); }
+  .btn:active:not(:disabled) { transform: scale(0.98); }
+  .btn:disabled { opacity: .55; cursor: not-allowed; }
+  .result {
+    margin-top: 14px;
+    font-size: 13px;
+    text-align: center;
+    min-height: 18px;
+    line-height: 1.4;
+  }
+  .result.ok { color: #4caf7d; }
+  .result.warn { color: var(--warn); }
+  .result.error { color: var(--red); }
+  .result.locked { color: var(--red); font-weight: 600; }
+  .footer-note {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-2);
+    margin-top: 1.5rem;
+    opacity: .7;
+  }
 </style>
 </head>
 <body>
-  <h3>Teste de Login</h3>
-  <input type="email" id="email" placeholder="E-mail">
-  <input type="password" id="senha" placeholder="Senha">
-  <button onclick="testar()">Testar login</button>
-  <div id="result"></div>
+  <div class="card">
+    <svg class="gauge" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="26" cy="26" r="23" stroke="#2a2f35" stroke-width="3"/>
+      <path d="M26 26 L26 26" stroke="#2a2f35"/>
+      <path d="M8 34 A 20 20 0 0 1 12 14" stroke="var(--red)" stroke-width="3" stroke-linecap="round" fill="none"/>
+      <line x1="26" y1="26" x2="34" y2="15" stroke="var(--red)" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="26" cy="26" r="3" fill="var(--red)"/>
+    </svg>
+    <h1 class="brand">Carteira <span>Platina</span></h1>
+    <p class="subtitle">Acesso restrito · Campanha de recarga</p>
+
+    <div class="field">
+      <label>E-mail</label>
+      <input type="email" id="email" autocomplete="username" placeholder="seu@email.com">
+    </div>
+    <div class="field">
+      <label>Senha</label>
+      <input type="password" id="senha" autocomplete="current-password" placeholder="••••••••">
+    </div>
+    <button class="btn" id="btn-login" onclick="testar()">Entrar</button>
+    <div class="result" id="result"></div>
+
+    <p class="footer-note">Platina Extintores</p>
+  </div>
 
 <script>
   const SUPABASE_URL = 'https://qraqfioyecspugrjlyqv.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyYXFmaW95ZWNzcHVncmpseXF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjA3MzYsImV4cCI6MjA5NjgzNjczNn0.6J4gUPWTTfQ4Tn8NPbpdxZ0RoMrcKdGDaJo0tMAUCno';
-
   const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  async function testar() {
-  const email = document.getElementById('email').value;
-  const senha = document.getElementById('senha').value;
   const resultEl = document.getElementById('result');
+  const btn = document.getElementById('btn-login');
 
-  const { data: check, error: checkError } = await client.rpc('check_login_allowed', { p_email: email });
-  if (checkError) {
-    resultEl.textContent = '⚠️ Erro ao verificar bloqueio: ' + checkError.message;
-    console.error('check_login_allowed error:', checkError);
-    return;
-  }
-  if (!check.allowed) {
-    const minutos = Math.ceil((new Date(check.locked_until) - new Date()) / 60000);
-    resultEl.textContent = `🔒 Conta bloqueada. Tente novamente em ${minutos} min.`;
-    return;
+  function setResult(text, cls) {
+    resultEl.textContent = text;
+    resultEl.className = 'result' + (cls ? ' ' + cls : '');
   }
 
-  const { data, error } = await client.auth.signInWithPassword({ email, password: senha });
+  async function testar() {
+    const email = document.getElementById('email').value.trim();
+    const senha = document.getElementById('senha').value;
 
-  const { error: regError } = await client.rpc('register_login_attempt', { p_email: email, p_success: !error });
-  if (regError) console.error('register_login_attempt error:', regError);
+    if (!email || !senha) {
+      setResult('Preencha e-mail e senha.', 'warn');
+      return;
+    }
 
-  resultEl.textContent = error
-    ? '❌ Erro: ' + error.message
-    : '✅ Login funcionou! Sessão criada para: ' + data.user.email;
-}
+    btn.disabled = true;
+    btn.textContent = 'Entrando...';
+    setResult('', '');
+
+    const { data: check, error: checkError } = await client.rpc('check_login_allowed', { p_email: email });
+
+    if (checkError) {
+      setResult('Erro ao verificar acesso: ' + checkError.message, 'error');
+      btn.disabled = false;
+      btn.textContent = 'Entrar';
+      return;
+    }
+
+    if (!check.allowed) {
+      const minutos = Math.ceil((new Date(check.locked_until) - new Date()) / 60000);
+      setResult(`Conta bloqueada. Tente novamente em ${minutos} min.`, 'locked');
+      btn.disabled = false;
+      btn.textContent = 'Entrar';
+      return;
+    }
+
+    const { data, error } = await client.auth.signInWithPassword({ email, password: senha });
+    const { data: reg } = await client.rpc('register_login_attempt', { p_email: email, p_success: !error });
+
+    btn.disabled = false;
+    btn.textContent = 'Entrar';
+
+    if (!error) {
+      setResult('Login realizado. Bem-vindo(a), ' + data.user.email, 'ok');
+      return;
+    }
+
+    const tentativasRestantes = 5 - (reg?.failed_count || 0);
+
+    if (tentativasRestantes <= 0) {
+      setResult('Conta bloqueada por 15 minutos.', 'locked');
+    } else if (tentativasRestantes <= 2) {
+      setResult(`Senha incorreta. Faltam ${tentativasRestantes} tentativa(s) antes do bloqueio.`, 'warn');
+    } else {
+      setResult('E-mail ou senha inválidos.', 'error');
+    }
+  }
+
+  document.getElementById('senha').addEventListener('keydown', e => {
+    if (e.key === 'Enter') testar();
+  });
 </script>
 </body>
 </html>
