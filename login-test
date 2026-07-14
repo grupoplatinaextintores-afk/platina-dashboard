@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Teste de Login · Platina</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  body { font-family: sans-serif; max-width: 320px; margin: 60px auto; }
+  input { width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box; }
+  button { width: 100%; padding: 9px; cursor: pointer; }
+  #result { margin-top: 12px; font-size: 13px; }
+</style>
+</head>
+<body>
+  <h3>Teste de Login</h3>
+  <input type="email" id="email" placeholder="E-mail">
+  <input type="password" id="senha" placeholder="Senha">
+  <button onclick="testar()">Testar login</button>
+  <div id="result"></div>
+
+<script>
+  const SUPABASE_URL = 'https://qraqfioyecspugrjlyqv.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyYXFmaW95ZWNzcHVncmpseXF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjA3MzYsImV4cCI6MjA5NjgzNjczNn0.6J4gUPWTTfQ4Tn8NPbpdxZ0RoMrcKdGDaJo0tMAUCno';
+
+  const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  async function testar() {
+    const email = document.getElementById('email').value;
+    const senha = document.getElementById('senha').value;
+    const { data, error } = await client.auth.signInWithPassword({ email, password: senha });
+    document.getElementById('result').textContent = error
+      ? '❌ Erro: ' + error.message + ' (status ' + error.status + ')'
+      : '✅ Login funcionou! Sessão criada para: ' + data.user.email;
+  }
+</script>
+</body>
+</html>
