@@ -25,13 +25,24 @@
   const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   async function testar() {
-    const email = document.getElementById('email').value;
-    const senha = document.getElementById('senha').value;
-    const { data, error } = await client.auth.signInWithPassword({ email, password: senha });
-    document.getElementById('result').textContent = error
-      ? '❌ Erro: ' + error.message + ' (status ' + error.status + ')'
-      : '✅ Login funcionou! Sessão criada para: ' + data.user.email;
+  const email = document.getElementById('email').value;
+  const senha = document.getElementById('senha').value;
+  const resultEl = document.getElementById('result');
+
+  const { data: check } = await client.rpc('check_login_allowed', { p_email: email });
+  if (!check.allowed) {
+    const minutos = Math.ceil((new Date(check.locked_until) - new Date()) / 60000);
+    resultEl.textContent = `🔒 Conta bloqueada. Tente novamente em ${minutos} min.`;
+    return;
   }
+
+  const { data, error } = await client.auth.signInWithPassword({ email, password: senha });
+  await client.rpc('register_login_attempt', { p_email: email, p_success: !error });
+
+  resultEl.textContent = error
+    ? '❌ Erro: ' + error.message
+    : '✅ Login funcionou! Sessão criada para: ' + data.user.email;
+}
 </script>
 </body>
 </html>
