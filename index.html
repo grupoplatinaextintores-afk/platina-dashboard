@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard Carteira · Platina Extintores</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -126,9 +127,70 @@ code { background: var(--bg); border: 1px solid var(--border); border-radius: 4p
 
 /* VALOR TOTAL */
 .valor-total { font-size: 22px; font-weight: 700; }
+
+/* LOGIN */
+.login-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.login-card { width: 100%; max-width: 340px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem 1.75rem 1.75rem; box-shadow: 0 20px 50px -20px rgba(0,0,0,0.15); }
+.login-brand { display: flex; align-items: center; gap: 10px; justify-content: center; margin-bottom: 4px; }
+.login-brand-name { font-size: 14px; font-weight: 600; color: var(--text); }
+.login-brand-sub { font-size: 11px; color: var(--text-3); }
+.login-subtitle { text-align: center; font-size: 12px; color: var(--text-2); margin: 6px 0 1.5rem; }
+.login-field { margin-bottom: 1rem; }
+.login-field label { display: block; font-size: 11px; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+.login-field input { width: 100%; padding: 9px 11px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; color: var(--text); background: var(--surface); }
+.login-field input:focus { outline: none; border-color: var(--red); }
+.login-btn { width: 100%; background: var(--red); border: none; color: white; padding: 10px; font-size: 13px; font-weight: 600; border-radius: var(--radius-sm); cursor: pointer; }
+.login-btn:hover:not(:disabled) { filter: brightness(1.08); }
+.login-btn:disabled { opacity: .55; cursor: not-allowed; }
+.login-result { margin-top: 12px; font-size: 12.5px; text-align: center; min-height: 16px; line-height: 1.4; }
+.login-result.ok { color: var(--green); }
+.login-result.warn { color: var(--amber); }
+.login-result.error { color: var(--danger); }
+.login-result.locked { color: var(--danger); font-weight: 600; }
+.login-link { display: block; width: 100%; background: none; border: none; color: var(--text-3); font-size: 12px; text-align: center; margin-top: 12px; cursor: pointer; text-decoration: underline; }
+.login-link:hover { color: var(--text-2); }
 </style>
 </head>
 <body>
+
+<div class="login-overlay" id="login-overlay">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2L4 7v10l8 5 8-5V7L12 2z"/></svg>
+      </div>
+      <div>
+        <div class="login-brand-name">Platina Extintores</div>
+        <div class="login-brand-sub">Carteira</div>
+      </div>
+    </div>
+    <p class="login-subtitle">Acesso restrito · Campanha de recarga</p>
+
+    <div id="login-fields">
+      <div class="login-field">
+        <label>E-mail</label>
+        <input type="email" id="login-email" autocomplete="username">
+      </div>
+      <div class="login-field">
+        <label>Senha</label>
+        <input type="password" id="login-senha" autocomplete="current-password">
+      </div>
+      <button class="login-btn" id="login-btn" onclick="doLogin()">Entrar</button>
+      <div class="login-result" id="login-result"></div>
+      <button class="login-link" onclick="toggleForgot()">Esqueci minha senha</button>
+    </div>
+
+    <div id="forgot-panel" style="display:none">
+      <div class="login-field">
+        <label>E-mail</label>
+        <input type="email" id="forgot-email">
+      </div>
+      <button class="login-btn" onclick="enviarReset()">Enviar link de redefinição</button>
+      <div class="login-result" id="forgot-result"></div>
+      <button class="login-link" onclick="toggleForgot()">Voltar ao login</button>
+    </div>
+  </div>
+</div>
 
 <header class="header">
   <div class="header-brand">
@@ -146,6 +208,7 @@ code { background: var(--bg); border: 1px solid var(--border); border-radius: 4p
       <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
       Atualizar
     </button>
+    <button class="btn-refresh" onclick="doLogout()">Sair</button>
   </div>
 </header>
 
@@ -183,8 +246,110 @@ code { background: var(--bg); border: 1px solid var(--border); border-radius: 4p
 const SUPABASE_URL = 'https://qraqfioyecspugrjlyqv.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyYXFmaW95ZWNzcHVncmpseXF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjA3MzYsImV4cCI6MjA5NjgzNjczNn0.6J4gUPWTTfQ4Tn8NPbpdxZ0RoMrcKdGDaJo0tMAUCno';
 
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 let chartTrend = null;
 let chartSellers = null;
+
+function setLoginResult(el, text, cls) {
+  el.textContent = text;
+  el.className = 'login-result' + (cls ? ' ' + cls : '');
+}
+
+async function checkSession() {
+  const { data: { session } } = await client.auth.getSession();
+  if (session) {
+    document.getElementById('login-overlay').style.display = 'none';
+    loadData();
+  } else {
+    document.getElementById('login-overlay').style.display = 'flex';
+  }
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const senha = document.getElementById('login-senha').value;
+  const resultEl = document.getElementById('login-result');
+  const btn = document.getElementById('login-btn');
+
+  if (!email || !senha) {
+    setLoginResult(resultEl, 'Preencha e-mail e senha.', 'warn');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Entrando...';
+  setLoginResult(resultEl, '', '');
+
+  const { data: check, error: checkError } = await client.rpc('check_login_allowed', { p_email: email });
+
+  if (checkError) {
+    setLoginResult(resultEl, 'Erro ao verificar acesso: ' + checkError.message, 'error');
+    btn.disabled = false;
+    btn.textContent = 'Entrar';
+    return;
+  }
+
+  if (!check.allowed) {
+    const minutos = Math.ceil((new Date(check.locked_until) - new Date()) / 60000);
+    setLoginResult(resultEl, `Conta bloqueada. Tente novamente em ${minutos} min.`, 'locked');
+    btn.disabled = false;
+    btn.textContent = 'Entrar';
+    return;
+  }
+
+  const { error } = await client.auth.signInWithPassword({ email, password: senha });
+  const { data: reg } = await client.rpc('register_login_attempt', { p_email: email, p_success: !error });
+
+  btn.disabled = false;
+  btn.textContent = 'Entrar';
+
+  if (!error) {
+    document.getElementById('login-overlay').style.display = 'none';
+    loadData();
+    return;
+  }
+
+  const restantes = 5 - (reg?.failed_count || 0);
+
+  if (restantes <= 0) {
+    setLoginResult(resultEl, 'Conta bloqueada por 15 minutos.', 'locked');
+  } else if (restantes <= 2) {
+    setLoginResult(resultEl, `Senha incorreta. Faltam ${restantes} tentativa(s) antes do bloqueio.`, 'warn');
+  } else {
+    setLoginResult(resultEl, 'E-mail ou senha inválidos.', 'error');
+  }
+}
+
+async function doLogout() {
+  await client.auth.signOut();
+  location.reload();
+}
+
+function toggleForgot() {
+  const loginFields = document.getElementById('login-fields');
+  const forgotPanel = document.getElementById('forgot-panel');
+  const hidden = forgotPanel.style.display === 'none';
+  forgotPanel.style.display = hidden ? 'block' : 'none';
+  loginFields.style.display = hidden ? 'none' : 'block';
+}
+
+async function enviarReset() {
+  const email = document.getElementById('forgot-email').value.trim();
+  const resultEl = document.getElementById('forgot-result');
+  if (!email) {
+    setLoginResult(resultEl, 'Informe seu e-mail.', 'warn');
+    return;
+  }
+  const { error } = await client.auth.resetPasswordForEmail(email, {
+    redirectTo: 'https://grupoplatinaextintores-afk.github.io/platina-dashboard/reset-password.html'
+  });
+  setLoginResult(resultEl, error ? 'Erro: ' + error.message : 'Se o e-mail existir, um link foi enviado.', error ? 'error' : 'ok');
+}
+
+document.getElementById('login-senha')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
 
 function onPeriodChange() {
   const v = document.getElementById('filter-period').value;
@@ -213,8 +378,11 @@ async function fetchContacts(period, seller) {
   if (filters.length) url += '&' + filters.join('&');
   url += '&limit=2000';
 
+  const { data: { session } } = await client.auth.getSession();
+  const token = session?.access_token || SUPABASE_ANON_KEY;
+
   const res = await fetch(url, {
-    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${token}` }
   });
   if (!res.ok) throw new Error(`Supabase: ${res.status}`);
   return res.json();
@@ -444,7 +612,7 @@ const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().split('
 document.getElementById('date-from').value = thirtyDaysAgo;
 document.getElementById('date-to').value = today;
 
-loadData();
+checkSession();
 </script>
 </body>
 </html>
