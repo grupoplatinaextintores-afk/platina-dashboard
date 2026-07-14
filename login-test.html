@@ -29,7 +29,12 @@
   const senha = document.getElementById('senha').value;
   const resultEl = document.getElementById('result');
 
-  const { data: check } = await client.rpc('check_login_allowed', { p_email: email });
+  const { data: check, error: checkError } = await client.rpc('check_login_allowed', { p_email: email });
+  if (checkError) {
+    resultEl.textContent = '⚠️ Erro ao verificar bloqueio: ' + checkError.message;
+    console.error('check_login_allowed error:', checkError);
+    return;
+  }
   if (!check.allowed) {
     const minutos = Math.ceil((new Date(check.locked_until) - new Date()) / 60000);
     resultEl.textContent = `🔒 Conta bloqueada. Tente novamente em ${minutos} min.`;
@@ -37,7 +42,9 @@
   }
 
   const { data, error } = await client.auth.signInWithPassword({ email, password: senha });
-  await client.rpc('register_login_attempt', { p_email: email, p_success: !error });
+
+  const { error: regError } = await client.rpc('register_login_attempt', { p_email: email, p_success: !error });
+  if (regError) console.error('register_login_attempt error:', regError);
 
   resultEl.textContent = error
     ? '❌ Erro: ' + error.message
