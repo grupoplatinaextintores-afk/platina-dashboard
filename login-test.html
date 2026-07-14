@@ -15,7 +15,6 @@
     --text: #eef1f3;
     --text-2: #8f9aa3;
     --red: #d1453d;
-    --red-dim: rgba(209, 69, 61, 0.15);
     --warn: #e0a721;
     --radius: 14px;
     --radius-sm: 8px;
@@ -40,11 +39,7 @@
     padding: 2rem 1.75rem 1.75rem;
     box-shadow: 0 20px 50px -20px rgba(0,0,0,0.6);
   }
-  .gauge {
-    width: 52px; height: 52px;
-    margin: 0 auto 1.1rem;
-    display: block;
-  }
+  .gauge { width: 52px; height: 52px; margin: 0 auto 1.1rem; display: block; }
   .brand {
     text-align: center;
     font-family: 'Space Grotesk', sans-serif;
@@ -59,7 +54,6 @@
     font-size: 12.5px;
     color: var(--text-2);
     margin: 4px 0 1.75rem;
-    letter-spacing: 0.01em;
   }
   .field { margin-bottom: 1rem; }
   .field label {
@@ -82,10 +76,7 @@
     font-family: 'Inter', sans-serif;
     transition: border-color .15s ease;
   }
-  .field input:focus {
-    outline: none;
-    border-color: var(--red);
-  }
+  .field input:focus { outline: none; border-color: var(--red); }
   .btn {
     width: 100%;
     padding: 11px;
@@ -98,125 +89,4 @@
     font-weight: 600;
     font-family: 'Inter', sans-serif;
     cursor: pointer;
-    transition: filter .15s ease, transform .05s ease;
-  }
-  .btn:hover:not(:disabled) { filter: brightness(1.1); }
-  .btn:active:not(:disabled) { transform: scale(0.98); }
-  .btn:disabled { opacity: .55; cursor: not-allowed; }
-  .result {
-    margin-top: 14px;
-    font-size: 13px;
-    text-align: center;
-    min-height: 18px;
-    line-height: 1.4;
-  }
-  .result.ok { color: #4caf7d; }
-  .result.warn { color: var(--warn); }
-  .result.error { color: var(--red); }
-  .result.locked { color: var(--red); font-weight: 600; }
-  .footer-note {
-    text-align: center;
-    font-size: 11px;
-    color: var(--text-2);
-    margin-top: 1.5rem;
-    opacity: .7;
-  }
-</style>
-</head>
-<body>
-  <div class="card">
-    <svg class="gauge" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="26" cy="26" r="23" stroke="#2a2f35" stroke-width="3"/>
-      <path d="M26 26 L26 26" stroke="#2a2f35"/>
-      <path d="M8 34 A 20 20 0 0 1 12 14" stroke="var(--red)" stroke-width="3" stroke-linecap="round" fill="none"/>
-      <line x1="26" y1="26" x2="34" y2="15" stroke="var(--red)" stroke-width="2.5" stroke-linecap="round"/>
-      <circle cx="26" cy="26" r="3" fill="var(--red)"/>
-    </svg>
-    <h1 class="brand">Carteira <span>Platina</span></h1>
-    <p class="subtitle">Acesso restrito · Campanha de recarga</p>
-
-    <div class="field">
-      <label>E-mail</label>
-      <input type="email" id="email" autocomplete="username" placeholder="seu@email.com">
-    </div>
-    <div class="field">
-      <label>Senha</label>
-      <input type="password" id="senha" autocomplete="current-password" placeholder="••••••••">
-    </div>
-    <button class="btn" id="btn-login" onclick="testar()">Entrar</button>
-    <div class="result" id="result"></div>
-
-    <p class="footer-note">Platina Extintores</p>
-  </div>
-
-<script>
-  const SUPABASE_URL = 'https://qraqfioyecspugrjlyqv.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyYXFmaW95ZWNzcHVncmpseXF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjA3MzYsImV4cCI6MjA5NjgzNjczNn0.6J4gUPWTTfQ4Tn8NPbpdxZ0RoMrcKdGDaJo0tMAUCno';
-  const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-  const resultEl = document.getElementById('result');
-  const btn = document.getElementById('btn-login');
-
-  function setResult(text, cls) {
-    resultEl.textContent = text;
-    resultEl.className = 'result' + (cls ? ' ' + cls : '');
-  }
-
-  async function testar() {
-    const email = document.getElementById('email').value.trim();
-    const senha = document.getElementById('senha').value;
-
-    if (!email || !senha) {
-      setResult('Preencha e-mail e senha.', 'warn');
-      return;
-    }
-
-    btn.disabled = true;
-    btn.textContent = 'Entrando...';
-    setResult('', '');
-
-    const { data: check, error: checkError } = await client.rpc('check_login_allowed', { p_email: email });
-
-    if (checkError) {
-      setResult('Erro ao verificar acesso: ' + checkError.message, 'error');
-      btn.disabled = false;
-      btn.textContent = 'Entrar';
-      return;
-    }
-
-    if (!check.allowed) {
-      const minutos = Math.ceil((new Date(check.locked_until) - new Date()) / 60000);
-      setResult(`Conta bloqueada. Tente novamente em ${minutos} min.`, 'locked');
-      btn.disabled = false;
-      btn.textContent = 'Entrar';
-      return;
-    }
-
-    const { data, error } = await client.auth.signInWithPassword({ email, password: senha });
-    const { data: reg } = await client.rpc('register_login_attempt', { p_email: email, p_success: !error });
-
-    btn.disabled = false;
-    btn.textContent = 'Entrar';
-
-    if (!error) {
-      setResult('Login realizado. Bem-vindo(a), ' + data.user.email, 'ok');
-      return;
-    }
-
-    const tentativasRestantes = 5 - (reg?.failed_count || 0);
-
-    if (tentativasRestantes <= 0) {
-      setResult('Conta bloqueada por 15 minutos.', 'locked');
-    } else if (tentativasRestantes <= 2) {
-      setResult(`Senha incorreta. Faltam ${tentativasRestantes} tentativa(s) antes do bloqueio.`, 'warn');
-    } else {
-      setResult('E-mail ou senha inválidos.', 'error');
-    }
-  }
-
-  document.getElementById('senha').addEventListener('keydown', e => {
-    if (e.key === 'Enter') testar();
-  });
-</script>
-</body>
-</html>
+    transition: filter .15s
