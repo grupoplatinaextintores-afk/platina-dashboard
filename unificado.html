@@ -428,7 +428,7 @@ function onPeriodChange() {
 }
 
 async function fetchContacts(period, seller) {
-  let url = `${SUPABASE_URL}/rest/v1/contacts?select=status,follow_count,vendedor_nome,data_disparo,data_ultimo_contato,valor_orcamento,nome_cliente,numero_orcamento`;
+  let url = `${SUPABASE_URL}/rest/v1/contacts?select=status,follow_count,vendedor_nome,data_disparo,data_ultimo_contato,valor_orcamento,nome_cliente,numero_orcamento,etapa_funil,reabordagem_count`;
   const filters = [];
   if (seller !== 'all') filters.push(`vendedor_nome=eq.${encodeURIComponent(seller)}`);
   if (period === 'custom') {
@@ -456,6 +456,9 @@ function calcMetrics(rows) {
   const bounces = rows.filter(r => r.status === 'bounce').length;
   const expirados = rows.filter(r => r.status === 'expirado').length;
   const pendentesList = rows.filter(r => r.status === 'pendente');
+  const emReabordagem = rows.filter(r => r.etapa_funil === 'reabordagem').length;
+  const emNutricao = rows.filter(r => r.etapa_funil === 'nutricao').length;
+  const encerrados = rows.filter(r => r.etapa_funil === 'encerrado').length;
   const valorTotal = rows.reduce((acc, r) => acc + (Number(r.valor_orcamento) || 0), 0);
 
   const bySeller = ['DAVID FAGUNDES', 'RONALDO CESAR CAPRINO LEME'].map(nome => {
@@ -479,7 +482,7 @@ function calcMetrics(rows) {
     respondidos: rows.filter(r => r.follow_count === n && r.status === 'respondido').length,
   }));
 
-  return { total, enviados, respondidos, bounces, expirados, pendentesList, valorTotal, bySeller, byFollowup };
+  return { total, enviados, respondidos, bounces, expirados, pendentesList, emReabordagem, emNutricao, encerrados, valorTotal, bySeller, byFollowup };
 }
 
 function buildCharts(m) {
@@ -528,6 +531,9 @@ function renderApp(m) {
     { label: 'Bounces (falha de entrega)', n: m.bounces, base: m.total, color: '#E24B4A' },
     { label: 'Respondidos', n: m.respondidos, base: m.enviados, color: '#BA7517' },
     { label: 'Expirados (sem resposta)', n: m.expirados, base: m.enviados, color: '#C4C2BA' },
+    { label: 'Em reabordagem (30/30/30d)', n: m.emReabordagem, base: m.total, color: '#E67E22' },
+    { label: 'Em nutrição (90d)', n: m.emNutricao, base: m.total, color: '#7B68EE' },
+    { label: 'Encerrados', n: m.encerrados, base: m.total, color: '#9C9A92' },
   ];
 
   document.getElementById('app-content').innerHTML = `
