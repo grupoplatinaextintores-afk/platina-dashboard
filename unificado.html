@@ -293,6 +293,9 @@ code { background: var(--bg); border: 1px solid var(--border); border-radius: 4p
       <div class="filter-separator"></div>
       <a href="cadencias.html" class="btn-light">📊 Ver Cadências</a>
       <a href="esgotados.html" class="btn-light">🚫 Esgotados</a>
+      <button class="btn-light" onclick="setRamperRespFilter('all')">Todos</button>
+      <button class="btn-light" onclick="setRamperRespFilter('respondeu')">Respondeu</button>
+      <button class="btn-light" onclick="setRamperRespFilter('nao_respondeu')">Não respondeu</button>
       <button class="btn-refresh" onclick="exportRamper()" style="background:rgba(29,158,117,.15);border-color:rgba(29,158,117,.35);color:var(--green)">📥 Exportar</button>
       <span class="badge-live"><span class="dot-live"></span>Tempo real</span>
     </div>
@@ -307,6 +310,9 @@ code { background: var(--bg); border: 1px solid var(--border); border-radius: 4p
       <div class="filter-separator"></div>
       <span class="filter-label">Status:</span>
       <select class="filter-select" id="orc-f-status" onchange="renderOrcamentos()"><option value="all">Todos</option></select>
+      <button class="btn-light" onclick="quickSetOrcStatus('bounce')">Bounce</button>
+      <button class="btn-light" onclick="quickSetOrcStatus('respondido')">Respondeu</button>
+      <button class="btn-light" onclick="quickSetOrcStatus('ativo')">Não respondeu</button>
       <div class="filter-separator"></div>
       <span class="filter-label">Perfil:</span>
       <select class="filter-select" id="orc-f-perfil" onchange="renderOrcamentos()"><option value="all">Todos</option></select>
@@ -327,6 +333,8 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let chartTrend = null, chartSellers = null;
+let carteiraRows = [];
+let carteiraQuickFilter = 'all';
 let ramperRows = [], orcRows = [];
 let activeTab = 'carteira';
 
@@ -428,7 +436,7 @@ function onPeriodChange() {
 }
 
 async function fetchContacts(period, seller) {
-  let url = `${SUPABASE_URL}/rest/v1/contacts?select=status,follow_count,vendedor_nome,data_disparo,data_ultimo_contato,valor_orcamento,nome_cliente,numero_orcamento,etapa_funil,reabordagem_count`;
+  let url = `${SUPABASE_URL}/rest/v1/contacts?select=status,follow_count,vendedor_nome,data_disparo,data_ultimo_contato,valor_orcamento,nome_cliente,numero_orcamento,etapa_funil,reabordagem_count,motivo_perda,data_encerramento_funil,contato,email`;
   const filters = [];
   if (seller !== 'all') filters.push(`vendedor_nome=eq.${encodeURIComponent(seller)}`);
   if (period === 'custom') {
@@ -593,12 +601,110 @@ function renderApp(m) {
     <div class="card" style="margin-bottom:.5rem"><div class="chart-wrap" style="height:200px"><canvas id="chartSellers"></canvas></div></div>
     <div id="legend-sellers" style="display:flex;gap:16px;margin-bottom:2rem"></div>
 
+    <div class="section-title">Base de contatos</div>
+    <div class="filters" style="margin-bottom:12px">
+      <button class="btn-light" id="cf-all" onclick="setCarteiraFilter('all')">Todos</button>
+      <button class="btn-light" id="cf-bounce" onclick="setCarteiraFilter('bounce')">Bounce</button>
+      <button class="btn-light" id="cf-respondido" onclick="setCarteiraFilter('respondido')">Respondeu</button>
+      <button class="btn-light" id="cf-nao" onclick="setCarteiraFilter('nao_respondeu')">Não respondeu</button>
+      <input type="text" class="search-input" id="carteira-search" placeholder="Buscar cliente ou orçamento..." oninput="renderCarteiraTable()">
+    </div>
+    <div class="table-card" id="carteira-table-wrap" style="margin-bottom:1.5rem"></div>
+
+    <div class="section-title">Churn / Encerrados</div>
+    <div id="carteira-churn-wrap" style="margin-bottom:1.5rem"></div>
+
     <div class="footer"><span>Dados em tempo real via API Supabase · tabela <code>contacts</code></span><span>E-mails abertos: não rastreado</span></div>
   `;
 
   buildCharts(m);
   renderLegend('legend-trend', [['#378ADD', 'Total'], ['#1D9E75', 'Respondidos']]);
   renderLegend('legend-sellers', [['#BA7517', 'David'], ['#185FA5', 'Ronaldo']]);
+  renderCarteiraTable();
+  renderCarteiraChurn();
+  updateCarteiraFilterButtons();
+}
+
+function nomeVendedor(v) {
+  if (v === 'DAVID FAGUNDES') return 'David';
+  if (v === 'RONALDO CESAR CAPRINO LEME') return 'Ronaldo';
+  return v || '—';
+}
+
+function statusPill(status) {
+  const map = {
+    respondido: 'p-green', bounce: 'p-red', enviado: 'p-blue',
+    expirado: 'p-gray', pendente: 'p-gray', erro_envio: 'p-red', processando: 'p-blue'
+  };
+  return `<span class="pill ${map[status] || 'p-gray'}">${esc(status || '—').replace(/_/g,' ')}</span>`;
+}
+
+function setCarteiraFilter(f) { carteiraQuickFilter = f; renderCarteiraTable(); updateCarteiraFilterButtons(); }
+
+function updateCarteiraFilterButtons() {
+  const map = { all: 'cf-all', bounce: 'cf-bounce', respondido: 'cf-respondido', nao_respondeu: 'cf-nao' };
+  Object.entries(map).forEach(([key, id]) => {
+    const el = document.getElementById(id);
+    if (el) el.style.cssText = key === carteiraQuickFilter ? 'background:var(--red);border-color:var(--red);color:#fff' : '';
+  });
+}
+
+function renderCarteiraTable() {
+  const wrap = document.getElementById('carteira-table-wrap');
+  if (!wrap) return;
+  const search = (document.getElementById('carteira-search')?.value || '').toLowerCase();
+  let rows = carteiraRows.filter(r => {
+    if (carteiraQuickFilter === 'bounce') return r.status === 'bounce';
+    if (carteiraQuickFilter === 'respondido') return r.status === 'respondido';
+    if (carteiraQuickFilter === 'nao_respondeu') return ['enviado', 'expirado'].includes(r.status);
+    return true;
+  });
+  if (search) rows = rows.filter(r => `${r.nome_cliente || ''} ${r.numero_orcamento || ''}`.toLowerCase().includes(search));
+
+  wrap.innerHTML = `
+    <div class="table-header"><span class="table-title">Contatos</span><span class="table-count">${rows.length} registro${rows.length !== 1 ? 's' : ''}</span></div>
+    <table>
+      <thead><tr><th>Cliente</th><th>Orçamento</th><th>Vendedor</th><th>Status</th><th>Último contato</th></tr></thead>
+      <tbody>
+        ${rows.length ? rows.map(r => `
+          <tr>
+            <td class="nome-principal">${esc(r.nome_cliente || '—')}</td>
+            <td>${esc(r.numero_orcamento || '—')}</td>
+            <td>${nomeVendedor(r.vendedor_nome)}</td>
+            <td>${statusPill(r.status)}</td>
+            <td>${fmtDate(r.data_ultimo_contato)}</td>
+          </tr>`).join('') : `<tr><td colspan="5" class="muted" style="text-align:center;padding:24px">Nenhum resultado para esse filtro.</td></tr>`}
+      </tbody>
+    </table>
+  `;
+}
+
+function renderCarteiraChurn() {
+  const wrap = document.getElementById('carteira-churn-wrap');
+  if (!wrap) return;
+  const rows = carteiraRows.filter(r => r.etapa_funil === 'encerrado');
+  if (rows.length === 0) {
+    wrap.innerHTML = `<div class="empty-msg"><div class="empty-icon">📪</div><div>Nenhum contato encerrado ainda.<br>Aparecem aqui os que esgotaram FollowUp + Reabordagem + Nutrição sem resposta.</div></div>`;
+    return;
+  }
+  wrap.innerHTML = `
+    <div class="table-card">
+      <div class="table-header"><span class="table-title">Encerrados sem resposta</span><span class="table-count">${rows.length} registro${rows.length !== 1 ? 's' : ''}</span></div>
+      <table>
+        <thead><tr><th>Cliente</th><th>Orçamento</th><th>Vendedor</th><th>Motivo</th><th>Encerrado em</th></tr></thead>
+        <tbody>
+          ${rows.map(r => `
+            <tr>
+              <td class="nome-principal">${esc(r.nome_cliente || '—')}</td>
+              <td>${esc(r.numero_orcamento || '—')}</td>
+              <td>${nomeVendedor(r.vendedor_nome)}</td>
+              <td style="max-width:280px;font-size:12px;color:var(--text-2)">${esc(r.motivo_perda || '—')}</td>
+              <td>${fmtDate(r.data_encerramento_funil)}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
 }
 
 async function loadData() {
@@ -607,6 +713,7 @@ async function loadData() {
   document.getElementById('app-content').innerHTML = '<div class="state-msg"><div class="spinner"></div>Carregando dados...</div>';
   try {
     const rows = await fetchContacts(period, seller);
+    carteiraRows = rows;
     const m = calcMetrics(rows);
     renderApp(m);
     stamp();
@@ -621,6 +728,7 @@ async function loadData() {
 const RMP_COL = { LEAD_ID:0, VENDEDOR:1, NOME:2, EMPRESA:3, EMAIL:4, TELEFONE:5, STATUS_INT:6, ETAPA:7, ULTIMA_ACAO:8, DATA_PRIMEIRO:9, DECISOR:10, CONTEXTO:11, STATUS:12, PROXIMA:13, DATA_PROXIMA:14, STATUS_EXEC:15, TENTATIVAS:16, MSG_ID:17, CARGO:18, PERFIL:19, TAG:20 };
 let rmpCharts = {};
 let rmpAllRows = [];
+let rmpRespFilter = 'all';
 
 function rmpStartOfDay(d){ const r=new Date(d); r.setHours(0,0,0,0); return r; }
 function rmpEndOfDay(d){ const r=new Date(d); r.setHours(23,59,59,999); return r; }
@@ -845,6 +953,15 @@ function renderRamperApp(m, mPrev, periodLabel, compareLabel) {
 
     <div id="ramper-nutri-section"></div>
 
+    <div class="section-title">Base de leads</div>
+    <div class="filters" style="margin-bottom:12px">
+      <input type="text" class="search-input" id="ramper-table-search" placeholder="Buscar nome, empresa ou vendedor..." oninput="renderRamperTable()">
+    </div>
+    <div class="table-card" id="ramper-table-wrap" style="margin-bottom:1.5rem"></div>
+
+    <div class="section-title">Churn / Encerrados</div>
+    <div id="ramper-churn-wrap" style="margin-bottom:1.5rem"></div>
+
     <div class="footer"><span>Dados lidos em tempo real via Google Sheets · aba <code>Pendentes_IA</code></span><span style="color:var(--text-3)">Filtro de período baseado em <code>Data_primeiro_contato</code></span></div>
   `;
 
@@ -861,6 +978,41 @@ function renderRamperApp(m, mPrev, periodLabel, compareLabel) {
 
   renderLegend('leg-etapas', [['#378ADD','Total'],['#1D9E75','Respondidos']]);
   renderLegend('leg-vendedores-rmp', [['#185FA5','Ronaldo'],['#BA7517','David']]);
+  renderRamperTable();
+}
+
+const RESPONDEU_ETAPAS = ['em_conversa','contato_humano','perdido','novo_responsavel'];
+
+function setRamperRespFilter(f) { rmpRespFilter = f; renderRamperTable(); }
+
+function renderRamperTable() {
+  const wrap = document.getElementById('ramper-table-wrap');
+  if (!wrap) return;
+  const search = (document.getElementById('ramper-table-search')?.value || '').toLowerCase();
+  let rows = rmpAllRows.filter(r => {
+    if (rmpRespFilter === 'respondeu') return RESPONDEU_ETAPAS.includes(r.etapa);
+    if (rmpRespFilter === 'nao_respondeu') return !RESPONDEU_ETAPAS.includes(r.etapa);
+    return true;
+  });
+  if (search) rows = rows.filter(r => `${r.nome || ''} ${r.empresa || ''} ${r.vendedor || ''}`.toLowerCase().includes(search));
+
+  wrap.innerHTML = `
+    <div class="table-header"><span class="table-title">Leads Ramper</span><span class="table-count">${rows.length} registro${rows.length !== 1 ? 's' : ''}</span></div>
+    <table>
+      <thead><tr><th>Nome / Empresa</th><th>Vendedor</th><th>Etapa</th><th>Perfil</th><th>Interesse</th><th>Data</th></tr></thead>
+      <tbody>
+        ${rows.length ? rows.map(r => `
+          <tr>
+            <td><div class="nome-principal">${esc(r.nome || '—')}</div><div class="sub-info">${esc(r.empresa || '—')}</div></td>
+            <td>${esc(r.vendedor || '—')}</td>
+            <td>${renderPill((r.etapa || '—').replace(/_/g,' '), RESPONDEU_ETAPAS.includes(r.etapa) ? 'p-green' : 'p-gray')}</td>
+            <td>${r.perfil ? esc(r.perfil).replace(/_/g,' ') : '<span class="muted">—</span>'}</td>
+            <td>${r.tag ? esc(r.tag).replace(/_/g,' ') : '<span class="muted">—</span>'}</td>
+            <td>${r.data_str || '—'}</td>
+          </tr>`).join('') : `<tr><td colspan="6" class="muted" style="text-align:center;padding:24px">Nenhum resultado para esse filtro.</td></tr>`}
+      </tbody>
+    </table>
+  `;
 }
 
 // Sub-seção: nutrição de 90 dias (dado novo, vem do Supabase, não da planilha)
@@ -895,9 +1047,37 @@ async function loadRamperNutricao(){
         </table>
       </div>`}
     `;
+    renderRamperChurn();
   }catch(err){
     el.innerHTML = `<div class="section-title">Nutrição de 90 dias (Supabase)</div><div class="state-msg">Erro ao carregar: ${esc(err.message)}</div>`;
   }
+}
+
+function renderRamperChurn() {
+  const wrap = document.getElementById('ramper-churn-wrap');
+  if (!wrap) return;
+  const rows = ramperRows.filter(r => r.etapa_funil === 'encerrado');
+  if (rows.length === 0) {
+    wrap.innerHTML = `<div class="empty-msg"><div class="empty-icon">📪</div><div>Nenhum lead encerrado ainda.<br>Aparecem aqui os que esgotaram a nutrição de 90 dias sem resposta.</div></div>`;
+    return;
+  }
+  wrap.innerHTML = `
+    <div class="table-card">
+      <div class="table-header"><span class="table-title">Encerrados sem resposta</span><span class="table-count">${rows.length} registro${rows.length !== 1 ? 's' : ''}</span></div>
+      <table>
+        <thead><tr><th>Nome / Empresa</th><th>Vendedor</th><th>Motivo</th><th>Encerrado em</th></tr></thead>
+        <tbody>
+          ${rows.map(r => `
+            <tr>
+              <td><div class="nome-principal">${esc(r.nome || '—')}</div><div class="sub-info">${esc(r.empresa || '—')}</div></td>
+              <td>${esc(r.vendedor || '—')}</td>
+              <td style="max-width:280px;font-size:12px;color:var(--text-2)">${esc(r.motivo_perda || '—')}</td>
+              <td>${fmtDate(r.data_encerramento_funil)}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
 }
 
 function exportRamper() {
@@ -1006,12 +1186,51 @@ function renderOrcamentos(){
               <td><div class="nome-principal">${esc(r.numero_orcamento || '—')}</div></td>
               <td>${esc(r.nome_contato || '—')}<div class="sub-info">${esc(r.empresa || '—')}</div></td>
               <td>${esc(r.vendedor_nome || '—')}</td>
-              <td><span class="pill ${r.status === 'fechado' ? 'p-green' : r.status === 'erro_envio' ? 'p-red' : r.status === 'encerrado_sem_resposta' ? 'p-gray' : 'p-blue'}">${esc(r.status||'—').replace(/_/g,' ')}</span></td>
+              <td><span class="pill ${orcStatusPillClass(r.status)}">${esc(r.status||'—').replace(/_/g,' ')}</span></td>
               <td>${r.perfil_detectado ? esc(r.perfil_detectado).replace(/_/g,' ') : '<span class="muted">—</span>'}</td>
               <td>${r.tag_interesse ? esc(r.tag_interesse).replace(/_/g,' ') : '<span class="muted">—</span>'}</td>
               <td>${r.fup_count ?? 0}/4</td>
               <td>${fmtDate(r.data_proximo_contato || r.data_proxima_nutricao)}</td>
             </tr>`).join('') : `<tr><td colspan="8" class="muted" style="text-align:center;padding:24px">Nenhum resultado para esse filtro.</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section-title">Churn / Encerrados</div>
+    ${renderOrcChurn()}
+  `;
+}
+
+function orcStatusPillClass(status) {
+  const map = { fechado: 'p-green', respondido: 'p-green', bounce: 'p-red', erro_envio: 'p-red', encerrado_sem_resposta: 'p-gray', ativo: 'p-blue' };
+  return map[status] || 'p-gray';
+}
+
+function quickSetOrcStatus(status) {
+  const sel = document.getElementById('orc-f-status');
+  if ([...sel.options].some(o => o.value === status)) sel.value = status;
+  renderOrcamentos();
+}
+
+function renderOrcChurn() {
+  const rows = orcRows.filter(r => r.etapa_funil === 'encerrado');
+  if (rows.length === 0) {
+    return `<div class="empty-msg"><div class="empty-icon">📪</div><div>Nenhum orçamento encerrado ainda.<br>Aparecem aqui os que esgotaram FollowUp + Reabordagem + Nutrição sem resposta.</div></div>`;
+  }
+  return `
+    <div class="table-card">
+      <div class="table-header"><span class="table-title">Encerrados sem resposta</span><span class="table-count">${rows.length} registro${rows.length !== 1 ? 's' : ''}</span></div>
+      <table>
+        <thead><tr><th>Orçamento</th><th>Cliente / Empresa</th><th>Vendedor</th><th>Motivo</th><th>Encerrado em</th></tr></thead>
+        <tbody>
+          ${rows.map(r => `
+            <tr>
+              <td class="nome-principal">${esc(r.numero_orcamento || '—')}</td>
+              <td>${esc(r.nome_contato || '—')}<div class="sub-info">${esc(r.empresa || '—')}</div></td>
+              <td>${esc(r.vendedor_nome || '—')}</td>
+              <td style="max-width:280px;font-size:12px;color:var(--text-2)">${esc(r.motivo_perda || '—')}</td>
+              <td>${fmtDate(r.data_encerramento_funil)}</td>
+            </tr>`).join('')}
         </tbody>
       </table>
     </div>
