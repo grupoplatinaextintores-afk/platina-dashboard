@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Análise de Cadências · Platina Extintores</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -209,31 +210,20 @@ code { background: var(--bg); border: 1px solid var(--border); border-radius: 4p
 </main>
 
 <script>
-const SHEET_ID   = '1iM7RpYL5HvdUHngRGGMqBG6159L1duOeellWPpn-gh8';
-const SHEET_NAME = 'Pendentes_IA';
+const SUPABASE_URL = 'https://qraqfioyecspugrjlyqv.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyYXFmaW95ZWNzcHVncmpseXF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjA3MzYsImV4cCI6MjA5NjgzNjczNn0.6J4gUPWTTfQ4Tn8NPbpdxZ0RoMrcKdGDaJo0tMAUCno';
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let allRows = [];
-
-function parseDate(str) {
-  if(!str) return null;
-  try {
-    const s = String(str).trim();
-    if(/^\d{4}-\d{2}-\d{2}/.test(s)) return new Date(s.substring(0,10)+'T00:00:00');
-    if(/^\d{1,2}\/\d{1,2}\/\d{4}/.test(s)) {
-      const [dd,mm,yy] = s.split('/');
-      return new Date(`${yy}-${mm.padStart(2,'0')}-${dd.padStart(2,'0')}T00:00:00`);
-    }
-  } catch(e) {}
-  return null;
-}
 
 function pct(a, b) {
   if(!b) return '—';
   return (a/b*100).toFixed(1) + '%';
 }
 
+// Handoff = chegou em contato_humano (etapa_funil é o campo confiável hoje)
 function isHandoff(r) {
-  return ['qualificado','encerrado_handoff'].includes(r.status_int) || r.proxima === 'handoff';
+  return r.etapa === 'contato_humano';
 }
 
 function getCadencia(tent) {
@@ -250,31 +240,26 @@ async function loadData() {
     '<div class="state-msg"><div class="spinner"></div>Carregando dados...</div>';
 
   try {
-    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
-    const res  = await fetch(url);
-    const text = await res.text();
-    const json = JSON.parse(text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/)[1]);
-    const rows = json.table.rows.slice(1);
+    const { data, error } = await client.from('ramper_leads').select('*');
+    if (error) throw error;
 
-    allRows = rows.map(r => {
-      const g  = i => r.c[i]?.v ?? '';
-      const gD = i => r.c[i]?.f || r.c[i]?.v || '';
-      const tent = parseInt(g(16)) || 0;
+    allRows = (data || []).map(r => {
+      const tent = Number(r.tentativas) || 0;
       return {
-        vendedor:   g(1),
-        nome:       g(2),
-        empresa:    g(3),
-        email:      g(4),
-        status_int: g(6),
-        etapa:      g(7),
-        status:     g(12),
-        proxima:    g(13),
-        contexto:   g(11),
+        vendedor:   r.vendedor,
+        nome:       r.nome,
+        empresa:    r.empresa,
+        email:      r.email,
+        status_int: r.status_interno,
+        etapa:      r.etapa_funil,
+        status:     r.status,
+        proxima:    r.proxima_acao,
+        contexto:   r.contexto_email,
         tentativas: tent,
         cadencia:   getCadencia(tent),
         etapa_nome: getEtapaNome(tent),
-        data_str:   gD(9),
-        data:       parseDate(gD(9)),
+        data_str:   r.data_primeiro_contato ? r.data_primeiro_contato.split('-').reverse().join('/') : '',
+        data:       r.data_primeiro_contato ? new Date(r.data_primeiro_contato + 'T00:00:00') : null,
       };
     }).filter(r => r.vendedor && r.tentativas >= 1);
 
