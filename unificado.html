@@ -307,6 +307,12 @@ code { background: var(--bg); border: 1px solid var(--border); border-radius: 4p
       <div class="filter-separator"></div>
       <span class="filter-label">Status:</span>
       <select class="filter-select" id="orc-f-status" onchange="renderOrcamentos()"><option value="all">Todos</option></select>
+      <div class="filter-separator"></div>
+      <span class="filter-label">Perfil:</span>
+      <select class="filter-select" id="orc-f-perfil" onchange="renderOrcamentos()"><option value="all">Todos</option></select>
+      <div class="filter-separator"></div>
+      <span class="filter-label">Interesse:</span>
+      <select class="filter-select" id="orc-f-tag" onchange="renderOrcamentos()"><option value="all">Todos</option></select>
       <input type="text" class="search-input" id="orc-search" placeholder="Buscar cliente, empresa ou nº..." oninput="renderOrcamentos()">
       <span class="badge-live"><span class="dot-live"></span>Tempo real</span>
     </div>
@@ -928,6 +934,8 @@ async function loadOrcamentos(){
     orcRows = data || [];
     fillSelect('orc-f-vendedor', [...new Set(orcRows.map(r=>r.vendedor_nome).filter(Boolean))], 'Todos');
     fillSelect('orc-f-status', [...new Set(orcRows.map(r=>r.status).filter(Boolean))], 'Todos');
+    fillSelect('orc-f-perfil', [...new Set(orcRows.map(r=>r.perfil_detectado).filter(Boolean))], 'Todos');
+    fillSelect('orc-f-tag', [...new Set(orcRows.map(r=>r.tag_interesse).filter(Boolean))], 'Todos');
     renderOrcamentos();
     stamp();
   }catch(err){
@@ -943,11 +951,15 @@ function renderOrcamentos(){
   }
   const vf = document.getElementById('orc-f-vendedor').value;
   const sf = document.getElementById('orc-f-status').value;
+  const pf = document.getElementById('orc-f-perfil').value;
+  const tf = document.getElementById('orc-f-tag').value;
   const q = document.getElementById('orc-search').value.toLowerCase();
 
   const rows = orcRows.filter(r => {
     if(vf !== 'all' && r.vendedor_nome !== vf) return false;
     if(sf !== 'all' && r.status !== sf) return false;
+    if(pf !== 'all' && r.perfil_detectado !== pf) return false;
+    if(tf !== 'all' && r.tag_interesse !== tf) return false;
     if(q && !`${r.nome_contato} ${r.empresa} ${r.numero_orcamento}`.toLowerCase().includes(q)) return false;
     return true;
   });
@@ -981,7 +993,7 @@ function renderOrcamentos(){
     <div class="table-card">
       <div class="table-header"><span class="table-title">Base de orçamentos</span><span class="table-count">${rows.length} registro${rows.length!==1?'s':''}</span></div>
       <table>
-        <thead><tr><th>Orçamento</th><th>Cliente / Empresa</th><th>Vendedor</th><th>Status</th><th>FUPs</th><th>Próximo contato</th></tr></thead>
+        <thead><tr><th>Orçamento</th><th>Cliente / Empresa</th><th>Vendedor</th><th>Status</th><th>Perfil</th><th>Interesse</th><th>FUPs</th><th>Próximo contato</th></tr></thead>
         <tbody>
           ${rows.length ? rows.map(r => `
             <tr>
@@ -989,9 +1001,11 @@ function renderOrcamentos(){
               <td>${esc(r.nome_contato || '—')}<div class="sub-info">${esc(r.empresa || '—')}</div></td>
               <td>${esc(r.vendedor_nome || '—')}</td>
               <td><span class="pill ${r.status === 'fechado' ? 'p-green' : r.status === 'erro_envio' ? 'p-red' : r.status === 'encerrado_sem_resposta' ? 'p-gray' : 'p-blue'}">${esc(r.status||'—').replace(/_/g,' ')}</span></td>
+              <td>${r.perfil_detectado ? esc(r.perfil_detectado).replace(/_/g,' ') : '<span class="muted">—</span>'}</td>
+              <td>${r.tag_interesse ? esc(r.tag_interesse).replace(/_/g,' ') : '<span class="muted">—</span>'}</td>
               <td>${r.fup_count ?? 0}/4</td>
               <td>${fmtDate(r.data_proximo_contato || r.data_proxima_nutricao)}</td>
-            </tr>`).join('') : `<tr><td colspan="6" class="muted" style="text-align:center;padding:24px">Nenhum resultado para esse filtro.</td></tr>`}
+            </tr>`).join('') : `<tr><td colspan="8" class="muted" style="text-align:center;padding:24px">Nenhum resultado para esse filtro.</td></tr>`}
         </tbody>
       </table>
     </div>
