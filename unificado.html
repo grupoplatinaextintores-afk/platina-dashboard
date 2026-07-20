@@ -651,23 +651,17 @@ function rmpParseDate(str) {
 }
 
 async function fetchRamperSheetRows() {
-  const url = `https://docs.google.com/spreadsheets/d/1iM7RpYL5HvdUHngRGGMqBG6159L1duOeellWPpn-gh8/gviz/tq?tqx=out:json&sheet=${encodeURIComponent('Pendentes_IA')}`;
-  const res = await fetch(url);
-  const text = await res.text();
-  const json = JSON.parse(text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/)[1]);
-  const rows = json.table.rows.slice(1);
-  return rows.map(r => {
-    const g = i => r.c[i]?.v ?? '';
-    const gDate = i => r.c[i]?.f || r.c[i]?.v || '';
-    return {
-      lead_id: g(RMP_COL.LEAD_ID), vendedor: g(RMP_COL.VENDEDOR), nome: g(RMP_COL.NOME), empresa: g(RMP_COL.EMPRESA),
-      email: g(RMP_COL.EMAIL), status_int: g(RMP_COL.STATUS_INT), etapa: g(RMP_COL.ETAPA), ultima_acao: g(RMP_COL.ULTIMA_ACAO),
-      data_str: gDate(RMP_COL.DATA_PRIMEIRO), data: rmpParseDate(gDate(RMP_COL.DATA_PRIMEIRO)),
-      status: g(RMP_COL.STATUS), proxima: g(RMP_COL.PROXIMA), status_exec: g(RMP_COL.STATUS_EXEC),
-      tentativas: parseInt(g(RMP_COL.TENTATIVAS)) || 0, contexto: g(RMP_COL.CONTEXTO),
-      cargo: g(RMP_COL.CARGO), perfil: g(RMP_COL.PERFIL), tag: g(RMP_COL.TAG),
-    };
-  }).filter(r => r.vendedor);
+  const { data, error } = await client.from('ramper_leads').select('*').order('created_at', { ascending: false }).limit(2000);
+  if (error) throw error;
+  return (data || []).map(r => ({
+    lead_id: r.lead_id_ramper, vendedor: r.vendedor, nome: r.nome, empresa: r.empresa, email: r.email,
+    status_int: r.status_interno, etapa: r.etapa_funil, ultima_acao: r.ultima_acao,
+    data_str: r.data_primeiro_contato ? fmtDate(r.data_primeiro_contato) : '',
+    data: r.data_primeiro_contato ? new Date(r.data_primeiro_contato + 'T00:00:00') : null,
+    status: r.status, proxima: r.proxima_acao, status_exec: r.status_execucao,
+    tentativas: Number(r.tentativas) || 0, contexto: r.contexto_email,
+    cargo: r.cargo, perfil: r.perfil_detectado, tag: r.tag_interesse,
+  })).filter(r => r.vendedor);
 }
 
 function rmpCalcMetrics(rows, range) {
@@ -675,17 +669,22 @@ function rmpCalcMetrics(rows, range) {
   const isAll = range[0].getFullYear() === 2020;
   const base = rows.filter(r => { if(isAll) return true; if(!r.data) return false; return r.data >= start && r.data <= end; });
 
+  // Baseado em etapa_funil, que é o campo mais confiável e consistente em todo o sistema atual.
+  // "Respondeu" = o lead saiu do fluxo automático (novo_lead/followup/quarentena/reabordagem/esgotado)
+  // e teve interação real: em_conversa, contato_humano (handoff), perdido (desinteresse) ou novo_responsavel (transferência).
+  const RESPONDEU = ['em_conversa','contato_humano','perdido','novo_responsavel'];
+
   const total = base.length;
   const disparos = base.reduce((acc, r) => acc + r.tentativas, 0);
-  const respondidos = base.filter(r => ['ia_conversando','handoff','encerrado_handoff','qualificado','desqualificado','interesse_futuro'].includes(r.status_int)).length;
-  const handoffs = base.filter(r => ['qualificado','encerrado_handoff'].includes(r.status_int) || r.proxima === 'handoff').length;
-  const desqual = base.filter(r => r.status_int === 'desqualificado').length;
+  const respondidos = base.filter(r => RESPONDEU.includes(r.etapa)).length;
+  const handoffs = base.filter(r => r.etapa === 'contato_humano').length;
+  const desqual = base.filter(r => r.etapa === 'perdido').length;
   const ativos = base.filter(r => r.status === 'ativo').length;
-  const hibernando = base.filter(r => r.status === 'hibernando').length;
+  const hibernando = base.filter(r => r.etapa === 'quarentena').length;
   const reabordagem = base.filter(r => r.etapa === 'reabordagem').length;
-  const esgotado = base.filter(r => r.status_int === 'esgotado').length;
+  const esgotado = base.filter(r => r.etapa === 'esgotado').length;
 
-  const respondidosComData = base.filter(r => r.data && ['ia_conversando','handoff','encerrado_handoff','qualificado','desqualificado'].includes(r.status_int));
+  const respondidosComData = base.filter(r => r.data && RESPONDEU.includes(r.etapa));
   const tempoConversao = respondidosComData.length > 0
     ? Math.round(respondidosComData.reduce((acc, r) => acc + Math.max(0, (new Date() - r.data) / 86400000), 0) / respondidosComData.length)
     : null;
@@ -695,16 +694,16 @@ function rmpCalcMetrics(rows, range) {
     return {
       nome, total: sub.length,
       disparos: sub.reduce((a,r) => a + r.tentativas, 0),
-      respondidos: sub.filter(r => ['ia_conversando','handoff','encerrado_handoff','qualificado','desqualificado'].includes(r.status_int)).length,
-      handoffs: sub.filter(r => ['qualificado','encerrado_handoff'].includes(r.status_int) || r.proxima === 'handoff').length,
-      desqual: sub.filter(r => r.status_int === 'desqualificado').length,
+      respondidos: sub.filter(r => RESPONDEU.includes(r.etapa)).length,
+      handoffs: sub.filter(r => r.etapa === 'contato_humano').length,
+      desqual: sub.filter(r => r.etapa === 'perdido').length,
       ativos: sub.filter(r => r.status === 'ativo').length,
     };
   });
 
   const porEtapa = [1,2,3,4].map(n => ({
     n, total: base.filter(r => r.tentativas === n).length,
-    respondidos: base.filter(r => r.tentativas === n && ['ia_conversando','handoff','encerrado_handoff','qualificado','desqualificado'].includes(r.status_int)).length,
+    respondidos: base.filter(r => r.tentativas === n && RESPONDEU.includes(r.etapa)).length,
   }));
 
   return { total, disparos, respondidos, handoffs, desqual, ativos, hibernando, reabordagem, esgotado, tempoConversao, porVendedor, porEtapa, rows: base };
