@@ -119,7 +119,7 @@ code { background: var(--bg); border: 1px solid var(--border); border-radius: 4p
     <div class="brand-icon"><svg viewBox="0 0 24 24"><path d="M12 2L4 7v10l8 5 8-5V7L12 2z"/></svg></div>
     <div>
       <span class="brand-name">Platina Extintores</span>
-      <span class="brand-sub">Análise de Cadências · Performance A vs B</span>
+      <span class="brand-sub">Handoffs e desempenho por etapa</span>
     </div>
   </div>
   <div class="header-right">
@@ -144,14 +144,6 @@ code { background: var(--bg); border: 1px solid var(--border); border-radius: 4p
       </select>
     </div>
     <div class="filter-divider"></div>
-    <div class="filter-group">
-      <span class="filter-label">Cadência</span>
-      <select class="filter-select" id="filter-cad" onchange="renderAll()">
-        <option value="all">A e B</option>
-        <option value="A">Somente A</option>
-        <option value="B">Somente B</option>
-      </select>
-    </div>
     <div class="filter-divider"></div>
     <input type="text" class="search-input" id="search" placeholder="🔍 Buscar empresa ou contato..." oninput="renderAll()">
   </div>
@@ -159,31 +151,11 @@ code { background: var(--bg); border: 1px solid var(--border); border-radius: 4p
   <!-- RESUMO GERAL -->
   <div class="section-title">Resumo geral</div>
   <div class="grid4" style="margin-bottom:1rem" id="stats-geral">
-    <div class="stat"><div class="stat-label">Total de leads</div><div class="stat-value" id="sg-total">—</div></div>
-    <div class="stat"><div class="stat-label">Total de handoffs</div><div class="stat-value green" id="sg-handoffs">—</div></div>
+    <div class="stat"><div class="stat-label">Leads abordados</div><div class="stat-value" id="sg-total">—</div></div>
+    <div class="stat"><div class="stat-label">Handoffs realizados</div><div class="stat-value green" id="sg-handoffs">—</div></div>
     <div class="stat"><div class="stat-label">Taxa de handoff</div><div class="stat-value blue" id="sg-taxa">—</div></div>
-    <div class="stat"><div class="stat-label">E-mail mais eficiente</div><div class="stat-value amber" id="sg-melhor">—</div><div class="stat-sub" id="sg-melhor-sub"></div></div>
-  </div>
-
-  <!-- COMPARATIVO A vs B -->
-  <div class="section-title">Cadência A vs Cadência B</div>
-  <div class="grid2" style="margin-bottom:1rem">
-    <div class="card">
-      <div class="card-title"><span class="etapa-tag tag-a">A</span> Cadência A — 4 e-mails</div>
-      <div class="kpi-row"><span class="kpi-key">Leads abordados</span><span class="kpi-val" id="ca-leads">—</span></div>
-      <div class="kpi-row"><span class="kpi-key">Handoffs realizados</span><span class="kpi-val green" id="ca-handoffs">—</span></div>
-      <div class="kpi-row"><span class="kpi-key">Taxa de handoff</span><span class="kpi-val" id="ca-taxa">—</span></div>
-      <div class="kpi-row"><span class="kpi-key">Foram para hibernação</span><span class="kpi-val amber" id="ca-hib">—</span></div>
-      <div class="kpi-row"><span class="kpi-key">Desqualificados</span><span class="kpi-val red" id="ca-desq">—</span></div>
-    </div>
-    <div class="card">
-      <div class="card-title"><span class="etapa-tag tag-b">B</span> Cadência B — 4 e-mails após 30 dias</div>
-      <div class="kpi-row"><span class="kpi-key">Leads reabordados</span><span class="kpi-val" id="cb-leads">—</span></div>
-      <div class="kpi-row"><span class="kpi-key">Handoffs realizados</span><span class="kpi-val green" id="cb-handoffs">—</span></div>
-      <div class="kpi-row"><span class="kpi-key">Taxa de handoff</span><span class="kpi-val" id="cb-taxa">—</span></div>
-      <div class="kpi-row"><span class="kpi-key">Esgotados</span><span class="kpi-val red" id="cb-esg">—</span></div>
-      <div class="kpi-row"><span class="kpi-key">Ainda em andamento</span><span class="kpi-val" id="cb-and">—</span></div>
-    </div>
+    <div class="stat"><div class="stat-label">Foram para hibernação</div><div class="stat-value amber" id="sg-hib">—</div></div>
+    <div class="stat"><div class="stat-label">Desqualificados</div><div class="stat-value" id="sg-desq" style="color:var(--danger)">—</div></div>
   </div>
 
   <!-- FUNIL POR ETAPA -->
@@ -227,11 +199,11 @@ function isHandoff(r) {
 }
 
 function getCadencia(tent) {
-  return tent >= 5 ? 'B' : 'A';
+  return tent >= 6 ? 'Reabordagem' : 'Inicial';
 }
 
 function getEtapaNome(tent) {
-  const map = {1:'Apresentação', 2:'FUP 1', 3:'FUP 2', 4:'FUP 3 / FUP 4', 5:'B1', 6:'B2', 7:'B3', 8:'B4'};
+  const map = {1:'Apresentação', 2:'FUP 1', 3:'FUP 2', 4:'FUP 3/4', 5:'Hibernando', 6:'Copy A', 7:'Copy B', 8:'Copy C'};
   return map[tent] || `Etapa ${tent}`;
 }
 
@@ -261,7 +233,7 @@ async function loadData() {
         data_str:   r.data_primeiro_contato ? r.data_primeiro_contato.split('-').reverse().join('/') : '',
         data:       r.data_primeiro_contato ? new Date(r.data_primeiro_contato + 'T00:00:00') : null,
       };
-    }).filter(r => r.vendedor && r.tentativas >= 1);
+    }).filter(r => r.vendedor);
 
     document.getElementById('last-update').textContent =
       'Atualizado ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
@@ -275,58 +247,32 @@ async function loadData() {
 
 function renderAll() {
   const seller = document.getElementById('filter-seller').value;
-  const cadFil = document.getElementById('filter-cad').value;
   const search = document.getElementById('search').value.toLowerCase();
 
   // Base filtrada por vendedor
   const base = allRows.filter(r => seller === 'all' || r.vendedor === seller);
 
-  // ─── RESUMO GERAL ────────────────────────────────────
+  // ─── RESUMO GERAL (unificado) ─────────────────────────
   const totalLeads    = base.length;
   const totalHandoffs = base.filter(isHandoff).length;
-
-  // E-mail mais eficiente (maior nº de handoffs)
-  const porEtapa = {};
-  base.filter(isHandoff).forEach(r => {
-    porEtapa[r.tentativas] = (porEtapa[r.tentativas] || 0) + 1;
-  });
-  const melhorEtapa = Object.entries(porEtapa).sort((a,b) => b[1]-a[1])[0];
+  const foramHibernar = base.filter(r => r.tentativas >= 5).length;
+  const desqualificados = base.filter(r => r.status_int === 'desqualificado').length;
 
   document.getElementById('sg-total').textContent    = totalLeads;
   document.getElementById('sg-handoffs').textContent = totalHandoffs;
   document.getElementById('sg-taxa').textContent     = pct(totalHandoffs, totalLeads);
-  document.getElementById('sg-melhor').textContent   = melhorEtapa ? getEtapaNome(parseInt(melhorEtapa[0])) : '—';
-  document.getElementById('sg-melhor-sub').textContent = melhorEtapa ? `${melhorEtapa[1]} handoffs` : '';
-
-  // ─── COMPARATIVO A vs B ───────────────────────────────
-  const cadA = base.filter(r => r.cadencia === 'A');
-  const cadB = base.filter(r => r.cadencia === 'B');
-  // Filtro de cadência aplicado ao funil e tabela (mas comparativo A vs B mostra sempre os dois)
-
-  const caHandoffs = cadA.filter(isHandoff).length;
-  const cbHandoffs = cadB.filter(isHandoff).length;
-
-  document.getElementById('ca-leads').textContent    = cadA.length;
-  document.getElementById('ca-handoffs').textContent = caHandoffs;
-  document.getElementById('ca-taxa').textContent     = pct(caHandoffs, cadA.length);
-  document.getElementById('ca-hib').textContent      = base.filter(r => r.tentativas >= 5).length;
-  document.getElementById('ca-desq').textContent     = cadA.filter(r => r.status_int === 'desqualificado').length;
-
-  document.getElementById('cb-leads').textContent    = cadB.length;
-  document.getElementById('cb-handoffs').textContent = cbHandoffs;
-  document.getElementById('cb-taxa').textContent     = pct(cbHandoffs, cadB.length);
-  document.getElementById('cb-esg').textContent      = base.filter(r => r.status_int === 'esgotado').length;
-  document.getElementById('cb-and').textContent      = cadB.filter(r => !['esgotado','qualificado','encerrado_handoff'].includes(r.status_int) && r.proxima !== 'handoff').length;
+  document.getElementById('sg-hib').textContent      = foramHibernar;
+  document.getElementById('sg-desq').textContent     = desqualificados;
 
   // ─── FUNIL POR ETAPA ──────────────────────────────────
   const etapas = [
-    {tent:1, nome:'Apresentação', cad:'A'},
-    {tent:2, nome:'FUP 1',        cad:'A'},
-    {tent:3, nome:'FUP 2',        cad:'A'},
-    {tent:4, nome:'FUP 3/4',      cad:'A'},
-    {tent:6, nome:'B1',           cad:'B'},
-    {tent:7, nome:'B2',           cad:'B'},
-    {tent:8, nome:'B3/B4',        cad:'B'},
+    {tent:1, nome:'Apresentação', grupo:'inicial'},
+    {tent:2, nome:'FUP 1',        grupo:'inicial'},
+    {tent:3, nome:'FUP 2',        grupo:'inicial'},
+    {tent:4, nome:'FUP 3/4',      grupo:'inicial'},
+    {tent:6, nome:'Copy A',       grupo:'reabordagem'},
+    {tent:7, nome:'Copy B',       grupo:'reabordagem'},
+    {tent:8, nome:'Copy C',       grupo:'reabordagem'},
   ];
 
   const handoffsPorEtapa = etapas.map(e => ({
@@ -341,7 +287,7 @@ function renderAll() {
   document.getElementById('etapa-grid').innerHTML = handoffsPorEtapa.map((e, i) => `
     <div class="etapa-card ${i === winnerIdx && e.handoffs > 0 ? 'winner' : ''}">
       ${i === winnerIdx && e.handoffs > 0 ? '<span class="winner-crown">👑</span>' : ''}
-      <span class="etapa-tag ${e.cad === 'A' ? 'tag-a' : 'tag-b'}">${e.cad}</span>
+      <span class="etapa-tag ${e.grupo === 'inicial' ? 'tag-a' : 'tag-b'}">${e.grupo === 'inicial' ? '1ª tentativa' : 'Reabordagem'}</span>
       <div class="etapa-nome">${e.nome}</div>
       <div class="etapa-handoffs">${e.handoffs}</div>
       <div class="etapa-taxa">handoffs · <span>${pct(e.handoffs, e.total)}</span></div>
@@ -352,7 +298,6 @@ function renderAll() {
   // ─── TABELA ───────────────────────────────────────────
   let filtered = base.filter(r => {
     if(!isHandoff(r)) return false;
-    if(cadFil !== 'all' && r.cadencia !== cadFil) return false;
     if(search) {
       const s = search.toLowerCase();
       const match = (r.empresa || '').toLowerCase().includes(s)
@@ -377,7 +322,7 @@ function renderAll() {
 
   const tbody = filtered.map(r => {
     const avcls  = r.vendedor === 'Ronaldo' ? 'p-blue' : 'p-amber';
-    const cadcls = r.cadencia === 'A' ? 'tag-a' : 'tag-b';
+    const cadcls = r.cadencia === 'Inicial' ? 'tag-a' : 'tag-b';
     return `<tr>
       <td><div class="empresa-nome">${r.empresa || '—'}</div></td>
       <td>
@@ -400,7 +345,7 @@ function renderAll() {
           <th>Empresa</th>
           <th>Contato</th>
           <th>Vendedor</th>
-          <th>Cadência</th>
+          <th>Etapa</th>
           <th>E-mail que gerou handoff</th>
           <th>Tentativas</th>
           <th>Primeiro contato</th>
@@ -415,13 +360,11 @@ loadData();
 
 function exportCadencias() {
   const seller = document.getElementById('filter-seller').value;
-  const cadFil = document.getElementById('filter-cad').value;
   const search = document.getElementById('search').value.toLowerCase();
 
   let data = allRows.filter(r => {
     if(!isHandoff(r)) return false;
     if(seller !== 'all' && r.vendedor !== seller) return false;
-    if(cadFil !== 'all' && r.cadencia !== cadFil) return false;
     if(search) {
       const match = (r.empresa||'').toLowerCase().includes(search)
                  || (r.nome   ||'').toLowerCase().includes(search)
@@ -434,7 +377,7 @@ function exportCadencias() {
     'Contato':              r.nome,
     'E-mail':               r.email,
     'Vendedor':             r.vendedor,
-    'Cadencia':             r.cadencia,
+    'Etapa':                r.cadencia,
     'Email_que_gerou_handoff': r.etapa_nome,
     'Tentativas':           r.tentativas,
     'Data_primeiro_contato': r.data_str,
