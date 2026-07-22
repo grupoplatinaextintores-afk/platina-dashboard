@@ -12,6 +12,7 @@
   --green: #1D9E75; --green-bg: #E1F5EE;
   --amber: #BA7517; --amber-bg: #FAEEDA;
   --blue: #185FA5; --blue-bg: #E6F1FB;
+  --purple: #6B4FA0; --purple-bg: #EFE9F7;
   --gray: #5F5E5A; --gray-bg: #F1EFE8;
   --border: #E0DED7; --bg: #F7F6F2; --surface: #FFFFFF;
   --text: #1A1A2E; --text-2: #5F5E5A; --text-3: #9C9A92;
@@ -64,6 +65,7 @@ tr:hover td { background: var(--bg); }
 .tag { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; display: inline-block; }
 .tag-a { background: var(--blue-bg); color: var(--blue); }
 .tag-b { background: var(--amber-bg); color: var(--amber); }
+.tag-n { background: var(--purple-bg); color: var(--purple); }
 .tag-sep { color: var(--text-3); font-size: 10px; margin: 0 2px; }
 .contexto-text { font-size: 12px; color: var(--text-2); max-width: 260px; line-height: 1.4; }
 .dias-badge { font-size: 12px; font-weight: 600; color: var(--danger); }
@@ -73,11 +75,11 @@ tr:hover td { background: var(--bg); }
 .empty-msg { text-align: center; padding: 3rem; color: var(--text-3); }
 .empty-icon { font-size: 32px; margin-bottom: 8px; }
 
-/* COMPARATIVO CADÊNCIA */
 .section-title { font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .07em; margin-bottom: .75rem; margin-top: 1.75rem; display: flex; align-items: center; gap: 8px; }
 .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
-@media(max-width:600px){ .grid2 { grid-template-columns: 1fr; } }
+.section-note { font-size: 11px; color: var(--text-3); margin: -.5rem 0 1rem; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+@media(max-width:700px){ .grid3 { grid-template-columns: 1fr; } }
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; }
 .card-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
 .kpi-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
@@ -122,14 +124,6 @@ code { background: var(--bg); border: 1px solid var(--border); border-radius: 4p
       </select>
     </div>
     <div class="filter-divider"></div>
-    <div class="filter-group">
-      <span class="filter-label">Cadência</span>
-      <select class="filter-select" id="filter-cadencia" onchange="renderAll()">
-        <option value="all">Todas</option>
-        <option value="B">Cadência B (esgotado)</option>
-      </select>
-    </div>
-    <div class="filter-divider"></div>
     <input type="text" class="search-input" id="search" placeholder="🔍 Buscar empresa, contato ou e-mail..." oninput="renderAll()">
   </div>
 
@@ -140,22 +134,27 @@ code { background: var(--bg); border: 1px solid var(--border); border-radius: 4p
     <div class="stat"><div class="stat-label">Dias médios em cadência</div><div class="stat-value" id="stat-tempo">—</div></div>
   </div>
 
-  <!-- COMPARATIVO CADÊNCIA A vs B -->
+  <!-- COMPARATIVO CADÊNCIA -->
   <div class="section-title">Eficiência das cadências — conversões por etapa</div>
-  <div class="grid2" id="comp-cadencia">
+  <div class="section-note">Nutrição ainda envia só 1 e-mail hoje no Ramper (não os 6 planejados) — assim que essa cadência for construída, o comparativo passa a trazer qual dos e-mails de nutrição gerou o handoff.</div>
+  <div class="grid3" id="comp-cadencia">
     <div class="card">
-      <div class="card-title"><span class="tag tag-a">A</span> Cadência A — 4 e-mails</div>
-      <div class="kpi-row"><span class="kpi-key">Leads abordados</span><span class="kpi-val" id="ca-total">—</span></div>
-      <div class="kpi-row"><span class="kpi-key">Handoffs na cadência A</span><span class="kpi-val" id="ca-conv">—</span></div>
+      <div class="card-title"><span class="tag tag-a">A</span> Copy A — 30 dias</div>
+      <div class="kpi-row"><span class="kpi-key">Leads na etapa</span><span class="kpi-val" id="ca-total">—</span></div>
+      <div class="kpi-row"><span class="kpi-key">Handoffs</span><span class="kpi-val" id="ca-conv">—</span></div>
       <div class="kpi-row"><span class="kpi-key">Taxa de handoff</span><span class="kpi-val" id="ca-taxa">—</span></div>
-      <div class="kpi-row"><span class="kpi-key">Foram para hibernação</span><span class="kpi-val" id="ca-hib">—</span></div>
     </div>
     <div class="card">
-      <div class="card-title"><span class="tag tag-b">B</span> Cadência B — 4 e-mails após 30 dias</div>
-      <div class="kpi-row"><span class="kpi-key">Leads reabordados</span><span class="kpi-val" id="cb-total">—</span></div>
-      <div class="kpi-row"><span class="kpi-key">Handoffs na cadência B</span><span class="kpi-val" id="cb-conv">—</span></div>
+      <div class="card-title"><span class="tag tag-b">B</span> Copy B — 60 dias</div>
+      <div class="kpi-row"><span class="kpi-key">Leads na etapa</span><span class="kpi-val" id="cb-total">—</span></div>
+      <div class="kpi-row"><span class="kpi-key">Handoffs</span><span class="kpi-val" id="cb-conv">—</span></div>
       <div class="kpi-row"><span class="kpi-key">Taxa de handoff</span><span class="kpi-val" id="cb-taxa">—</span></div>
-      <div class="kpi-row"><span class="kpi-key">Esgotados (sem resposta)</span><span class="kpi-val" id="cb-esg">—</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="tag tag-n" style="background:var(--purple-bg);color:var(--purple)">C</span> Copy C — 90 dias</div>
+      <div class="kpi-row"><span class="kpi-key">Leads na etapa</span><span class="kpi-val" id="cc-total">—</span></div>
+      <div class="kpi-row"><span class="kpi-key">Handoffs</span><span class="kpi-val" id="cc-conv">—</span></div>
+      <div class="kpi-row"><span class="kpi-key">Esgotados (sem resposta)</span><span class="kpi-val" id="cc-esg">—</span></div>
     </div>
   </div>
 
@@ -163,7 +162,7 @@ code { background: var(--bg); border: 1px solid var(--border); border-radius: 4p
   <div class="section-title">Lista de empresas esgotadas</div>
   <div class="table-card">
     <div class="table-header">
-      <span class="table-title">Empresas sem resposta após cadência B completa</span>
+      <span class="table-title">Empresas sem resposta após Copy A + Copy B + Copy C</span>
       <span class="table-count" id="table-count">0 registros</span>
     </div>
     <div id="table-content">
@@ -172,7 +171,7 @@ code { background: var(--bg); border: 1px solid var(--border); border-radius: 4p
   </div>
 
   <div class="footer">
-    <span>Esgotados: <code>Status_interno = esgotado</code> · aba <code>Pendentes_IA</code></span>
+    <span>Esgotados: <code>etapa_funil = esgotado</code> · tabela <code>ramper_leads</code></span>
     <span id="last-update">—</span>
   </div>
 
@@ -190,10 +189,19 @@ function diasDesde(date) {
   if(!date) return null;
   return Math.round((new Date() - date) / (1000*60*60*24));
 }
-
-function pct(a, b) {
-  if(!b) return '—';
-  return (a/b*100).toFixed(1) + '%';
+function pct(a, b) { if(!b) return '—'; return (a/b*100).toFixed(1) + '%'; }
+function isHandoff(r) {
+  return r.proxima === 'handoff' || r.etapa === 'contato_humano' || r.status_int === 'qualificado' || r.status_int === 'encerrado_handoff';
+}
+function getEtapaReal(r) {
+  if (r.etapa === 'esgotado') return 'esgotado';
+  if (r.etapa === 'nutricao') return 'nutricao';
+  if (r.proxima === 'reabordagem_b1') return 'copyA';
+  if (r.proxima === 'reabordagem_b2') return 'copyB';
+  if (r.proxima === 'reabordagem_b3') return 'copyC';
+  if (r.etapa === 'reabordagem') return 'copyB';
+  if (r.etapa === 'quarentena') return 'copyA';
+  return 'inicial';
 }
 
 async function loadData() {
@@ -212,13 +220,13 @@ async function loadData() {
       status_int: r.status_interno,
       etapa:      r.etapa_funil,
       status:     r.status,
+      proxima:    r.proxima_acao,
       contexto:   r.contexto_email,
       tentativas: Number(r.tentativas) || 0,
       data_str:   r.data_primeiro_contato ? r.data_primeiro_contato.split('-').reverse().join('/') : '',
       data:       r.data_primeiro_contato ? new Date(r.data_primeiro_contato + 'T00:00:00') : null,
     })).filter(r => r.vendedor);
 
-    // Esgotado = campo mais confiável hoje é etapa_funil (status_interno é acompanhante, nem sempre presente)
     esgotados = allRows.filter(r => r.etapa === 'esgotado');
 
     document.getElementById('last-update').textContent =
@@ -235,7 +243,6 @@ function renderAll() {
   const seller  = document.getElementById('filter-seller').value;
   const search  = document.getElementById('search').value.toLowerCase();
 
-  // Base filtrada por vendedor (para stats e comparativo)
   const base = seller === 'all' ? allRows : allRows.filter(r => r.vendedor === seller);
 
   // ─── STATS ───────────────────────────────────────────
@@ -250,37 +257,29 @@ function renderAll() {
     : null;
   document.getElementById('stat-tempo').textContent = tempoMedio !== null ? tempoMedio + 'd' : '—';
 
-  // ─── COMPARATIVO CADÊNCIA A vs B ─────────────────────
-  // Cadência A: todos os leads que foram abordados (tentativas >= 1)
-  const cadA_total = base.filter(r => r.tentativas >= 1).length;
-  // Handoffs na cadência A = chegaram em contato_humano com tentativas <= 4
-  const cadA_conv  = base.filter(r => r.tentativas <= 4 && r.etapa === 'contato_humano').length;
-  // Foram para hibernação = passaram para cadência B
-  const cadA_hib   = base.filter(r => r.tentativas >= 5).length;
+  // ─── COMPARATIVO Copy A / B / C ───────────────────────
+  const rowsA = base.filter(r => getEtapaReal(r) === 'copyA');
+  const rowsB = base.filter(r => getEtapaReal(r) === 'copyB');
+  const rowsC = base.filter(r => getEtapaReal(r) === 'copyC');
 
-  // Cadência B: leads que chegaram à reabordagem (tentativas >= 5)
-  const cadB_total = base.filter(r => r.tentativas >= 5).length;
-  // Handoffs na cadência B = chegaram em contato_humano com tentativas >= 5
-  const cadB_conv  = base.filter(r => r.tentativas >= 5 && r.etapa === 'contato_humano').length;
-  // Esgotados = completaram B sem resposta
-  const cadB_esg   = base.filter(r => r.etapa === 'esgotado').length;
+  document.getElementById('ca-total').textContent = rowsA.length;
+  document.getElementById('ca-conv').textContent  = rowsA.filter(isHandoff).length;
+  document.getElementById('ca-taxa').textContent  = pct(rowsA.filter(isHandoff).length, rowsA.length);
 
-  document.getElementById('ca-total').textContent = cadA_total;
-  document.getElementById('ca-conv').textContent  = cadA_conv;
-  document.getElementById('ca-taxa').textContent  = pct(cadA_conv, cadA_total);
-  document.getElementById('ca-hib').textContent   = cadA_hib;
+  document.getElementById('cb-total').textContent = rowsB.length;
+  document.getElementById('cb-conv').textContent  = rowsB.filter(isHandoff).length;
+  document.getElementById('cb-taxa').textContent  = pct(rowsB.filter(isHandoff).length, rowsB.length);
 
-  document.getElementById('cb-total').textContent = cadB_total;
-  document.getElementById('cb-conv').textContent  = cadB_conv;
-  document.getElementById('cb-taxa').textContent  = pct(cadB_conv, cadB_total);
-  document.getElementById('cb-esg').textContent   = cadB_esg;
+  document.getElementById('cc-total').textContent = rowsC.length;
+  document.getElementById('cc-conv').textContent  = rowsC.filter(isHandoff).length;
+  document.getElementById('cc-esg').textContent   = base.filter(r => r.etapa === 'esgotado').length;
 
   // ─── TABELA ───────────────────────────────────────────
   let filtered = esgBase.filter(r => {
     if(!search) return true;
-    return r.empresa.toLowerCase().includes(search)
-        || r.nome.toLowerCase().includes(search)
-        || r.email.toLowerCase().includes(search);
+    return (r.empresa||'').toLowerCase().includes(search)
+        || (r.nome||'').toLowerCase().includes(search)
+        || (r.email||'').toLowerCase().includes(search);
   });
 
   document.getElementById('table-count').textContent =
@@ -306,6 +305,8 @@ function renderAll() {
         <span class="tag tag-a">A</span>
         <span class="tag-sep">+</span>
         <span class="tag tag-b">B</span>
+        <span class="tag-sep">+</span>
+        <span class="tag" style="background:var(--purple-bg);color:var(--purple)">C</span>
       </td>
       <td>${r.data_str || '—'}</td>
       <td>${dias !== null ? `<span class="dias-badge">${dias}d</span>` : '—'}</td>
@@ -345,7 +346,7 @@ function exportEsgotados() {
     'Contato':              r.nome,
     'E-mail':               r.email,
     'Vendedor':             r.vendedor,
-    'Cadencia':             'A+B',
+    'Cadencia':             'A+B+C',
     'Tentativas':           r.tentativas,
     'Data_primeiro_contato': r.data_str,
     'Contexto':             r.contexto,
@@ -364,7 +365,7 @@ function exportToExcel(data, filename) {
       return str.includes(';') || str.includes('\n') ? `"${str}"` : str;
     }).join(';'))
   ];
-  const csv  = '\uFEFF' + csvRows.join('\n');
+  const csv  = '﻿' + csvRows.join('\n');
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
