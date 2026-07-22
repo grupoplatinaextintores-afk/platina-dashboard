@@ -514,7 +514,7 @@ function buildCharts(m) {
   const s = m.bySeller;
   chartSellers = new Chart(document.getElementById('chartSellers'), {
     type: 'bar',
-    data: { labels: ['Disparados', 'Enviados', 'Respondidos', 'Bounces', 'Expirados'], datasets: [
+    data: { labels: ['Disparados', 'Entregues', 'Respondidos', 'Bounces', 'Expirados'], datasets: [
       { label: 'David', data: [s[0].total, s[0].enviados, s[0].respondidos, s[0].bounces, s[0].expirados], backgroundColor: '#BA751755', borderColor: '#BA7517', borderWidth: 1.5 },
       { label: 'Ronaldo', data: [s[1].total, s[1].enviados, s[1].respondidos, s[1].bounces, s[1].expirados], backgroundColor: '#185FA555', borderColor: '#185FA5', borderWidth: 1.5 },
     ]},
@@ -547,7 +547,7 @@ function renderApp(m) {
   document.getElementById('app-content').innerHTML = `
     <div class="metrics-grid">
       <div class="metric"><div class="metric-label">Disparados</div><div class="metric-value">${m.total}</div><div class="metric-sub">total da campanha</div></div>
-      <div class="metric highlight-blue"><div class="metric-label">Enviados (Entregues)</div><div class="metric-value blue">${m.enviados}</div><div class="metric-sub">${pct(m.enviados, m.total)} dos disparados</div></div>
+      <div class="metric highlight-blue"><div class="metric-label">Entregues</div><div class="metric-value blue">${m.enviados}</div><div class="metric-sub">${pct(m.enviados, m.total)} dos disparados</div></div>
       <div class="metric highlight"><div class="metric-label">Respondidos</div><div class="metric-value green">${m.respondidos}</div><div class="metric-sub">${pct(m.respondidos, m.enviados)} dos enviados</div></div>
       <div class="metric highlight-warn"><div class="metric-label">Bounces</div><div class="metric-value red">${m.bounces}</div><div class="metric-sub">${pct(m.bounces, m.enviados)} dos enviados</div></div>
       <div class="metric"><div class="metric-label">Expirados</div><div class="metric-value">${m.expirados}</div><div class="metric-sub">sem resposta após FUP4</div></div>
@@ -591,7 +591,7 @@ function renderApp(m) {
           <div class="seller-header"><div class="avatar ${sv.avcls}">${sv.av}</div><div><div class="seller-name">${sv.label}</div><div class="seller-region">${sv.region}</div></div></div>
           <div class="kpi-row"><span class="kpi-key">Valor em orçamentos</span><span class="kpi-val" style="color:var(--amber);font-weight:700">${fmtBRL(sv.valor)}</span></div>
           <div class="kpi-row"><span class="kpi-key">Disparados</span><span class="kpi-val">${sv.total}</span></div>
-          <div class="kpi-row"><span class="kpi-key">Enviados (Entregues)</span><span class="kpi-val">${sv.enviados} ${renderPill(pct(sv.enviados, sv.total), 'p-blue')}</span></div>
+          <div class="kpi-row"><span class="kpi-key">Entregues</span><span class="kpi-val">${sv.enviados} ${renderPill(pct(sv.enviados, sv.total), 'p-blue')}</span></div>
           <div class="kpi-row"><span class="kpi-key">Respondidos</span><span class="kpi-val">${sv.respondidos} ${renderPill(pct(sv.respondidos, sv.enviados), 'p-green')}</span></div>
           <div class="kpi-row"><span class="kpi-key">Bounces</span><span class="kpi-val">${sv.bounces} ${renderPill(pct(sv.bounces, sv.enviados), 'p-red')}</span></div>
           <div class="kpi-row"><span class="kpi-key">Expirados</span><span class="kpi-val">${sv.expirados} ${renderPill(pct(sv.expirados, sv.enviados), 'p-gray')}</span></div>
