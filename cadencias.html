@@ -12,6 +12,7 @@
   --green: #1D9E75; --green-bg: #E1F5EE;
   --amber: #BA7517; --amber-bg: #FAEEDA;
   --blue: #185FA5; --blue-bg: #E6F1FB;
+  --purple: #6B4FA0; --purple-bg: #EFE9F7;
   --gray: #5F5E5A; --gray-bg: #F1EFE8;
   --border: #E0DED7; --bg: #F7F6F2; --surface: #FFFFFF;
   --text: #1A1A2E; --text-2: #5F5E5A; --text-3: #9C9A92;
@@ -45,11 +46,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .section-title { font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .07em; margin-bottom: .75rem; margin-top: 1.75rem; display: flex; align-items: center; gap: 8px; }
 .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 .section-title:first-child { margin-top: 0; }
+.section-note { font-size: 11px; color: var(--text-3); margin: -.5rem 0 1rem; }
 
 /* CARDS */
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-@media(max-width:700px){ .grid2,.grid4 { grid-template-columns: 1fr 1fr; } }
+.grid5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+@media(max-width:700px){ .grid2,.grid4,.grid5 { grid-template-columns: 1fr 1fr; } }
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; }
 .card-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
 .kpi-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
@@ -67,6 +70,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .stat-value.green { color: var(--green); }
 .stat-value.amber { color: var(--amber); }
 .stat-value.blue { color: var(--blue); }
+.stat-value.purple { color: var(--purple); }
 .stat-sub { font-size: 11px; color: var(--text-3); margin-top: 3px; }
 
 /* FUNIL POR ETAPA */
@@ -77,6 +81,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .etapa-tag { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; display: inline-block; margin-bottom: 6px; }
 .tag-a { background: var(--blue-bg); color: var(--blue); }
 .tag-b { background: var(--amber-bg); color: var(--amber); }
+.tag-n { background: var(--purple-bg); color: var(--purple); }
 .etapa-nome { font-size: 11px; color: var(--text-3); margin-bottom: 8px; }
 .etapa-handoffs { font-size: 28px; font-weight: 700; color: var(--text); line-height: 1; }
 .etapa-taxa { font-size: 11px; color: var(--text-3); margin-top: 4px; }
@@ -144,22 +149,22 @@ code { background: var(--bg); border: 1px solid var(--border); border-radius: 4p
       </select>
     </div>
     <div class="filter-divider"></div>
-    <div class="filter-divider"></div>
     <input type="text" class="search-input" id="search" placeholder="🔍 Buscar empresa ou contato..." oninput="renderAll()">
   </div>
 
   <!-- RESUMO GERAL -->
   <div class="section-title">Resumo geral</div>
-  <div class="grid4" style="margin-bottom:1rem" id="stats-geral">
+  <div class="grid5" style="margin-bottom:1rem" id="stats-geral">
     <div class="stat"><div class="stat-label">Leads abordados</div><div class="stat-value" id="sg-total">—</div></div>
     <div class="stat"><div class="stat-label">Handoffs realizados</div><div class="stat-value green" id="sg-handoffs">—</div></div>
     <div class="stat"><div class="stat-label">Taxa de handoff</div><div class="stat-value blue" id="sg-taxa">—</div></div>
-    <div class="stat"><div class="stat-label">Foram para hibernação</div><div class="stat-value amber" id="sg-hib">—</div></div>
-    <div class="stat"><div class="stat-label">Desqualificados</div><div class="stat-value" id="sg-desq" style="color:var(--danger)">—</div></div>
+    <div class="stat"><div class="stat-label">Foram para reabordagem 30/30/30</div><div class="stat-value amber" id="sg-hib">—</div></div>
+    <div class="stat"><div class="stat-label">Desqualificados</div><div class="stat-value red" id="sg-desq">—</div><div class="stat-sub">sem interesse e opt-out</div></div>
   </div>
 
   <!-- FUNIL POR ETAPA -->
   <div class="section-title">Handoffs por etapa da cadência</div>
+  <div class="section-note">Copy A/B/C = reabordagem aos 30, 60 e 90 dias após o fim do follow-up inicial. Nutrição = leads que esgotaram a reabordagem e aguardam contato futuro (hoje apenas 1 e-mail; ainda não temos uma cadência de 6 e-mails de nutrição ativa para o Ramper).</div>
   <div class="etapa-grid" id="etapa-grid" style="margin-bottom:1.5rem"></div>
 
   <!-- TABELA HANDOFFS -->
@@ -175,7 +180,7 @@ code { background: var(--bg); border: 1px solid var(--border); border-radius: 4p
   </div>
 
   <div class="footer">
-    <span>Handoff = <code>status_interno = qualificado</code> ou <code>encerrado_handoff</code> ou <code>proxima_acao = handoff</code></span>
+    <span>Handoff = <code>proxima_acao = handoff</code> ou <code>etapa_funil = contato_humano</code> ou <code>status_interno</code> qualificado/encerrado_handoff</span>
     <span id="last-update">—</span>
   </div>
 
@@ -193,18 +198,25 @@ function pct(a, b) {
   return (a/b*100).toFixed(1) + '%';
 }
 
-// Handoff = chegou em contato_humano (etapa_funil é o campo confiável hoje)
+// Handoff = definição ampla, cobre os 3 sinais que o pipeline pode gravar
 function isHandoff(r) {
-  return r.etapa === 'contato_humano';
+  return r.proxima === 'handoff' || r.etapa === 'contato_humano' || r.status_int === 'qualificado' || r.status_int === 'encerrado_handoff';
+}
+function isDesqual(r) {
+  return r.etapa === 'perdido' || r.status_int === 'desqualificado';
 }
 
-function getCadencia(tent) {
-  return tent >= 6 ? 'Reabordagem' : 'Inicial';
-}
-
-function getEtapaNome(tent) {
-  const map = {1:'Apresentação', 2:'FUP 1', 3:'FUP 2', 4:'FUP 3/4', 5:'Hibernando', 6:'Copy A', 7:'Copy B', 8:'Copy C'};
-  return map[tent] || `Etapa ${tent}`;
+// Etapa real da cadência: baseada em proxima_acao/etapa_funil (o campo "tentativas" não é confiável
+// para isso, pois é só um contador cumulativo de disparos, não indica a etapa atual)
+function getEtapaReal(r) {
+  if (r.etapa === 'esgotado') return 'esgotado';
+  if (r.etapa === 'nutricao') return 'nutricao';
+  if (r.proxima === 'reabordagem_b1') return 'copyA'; // aguardando 30d
+  if (r.proxima === 'reabordagem_b2') return 'copyB'; // aguardando 60d
+  if (r.proxima === 'reabordagem_b3') return 'copyC'; // aguardando 90d
+  if (r.etapa === 'reabordagem') return 'copyB'; // fallback: já em reabordagem mas sem proxima_acao clara
+  if (r.etapa === 'quarentena') return 'copyA';
+  return 'inicial';
 }
 
 async function loadData() {
@@ -226,10 +238,9 @@ async function loadData() {
         etapa:      r.etapa_funil,
         status:     r.status,
         proxima:    r.proxima_acao,
+        ultima:     r.ultima_acao,
         contexto:   r.contexto_email,
         tentativas: tent,
-        cadencia:   getCadencia(tent),
-        etapa_nome: getEtapaNome(tent),
         data_str:   r.data_primeiro_contato ? r.data_primeiro_contato.split('-').reverse().join('/') : '',
         data:       r.data_primeiro_contato ? new Date(r.data_primeiro_contato + 'T00:00:00') : null,
       };
@@ -255,45 +266,48 @@ function renderAll() {
   // ─── RESUMO GERAL (unificado) ─────────────────────────
   const totalLeads    = base.length;
   const totalHandoffs = base.filter(isHandoff).length;
-  const foramHibernar = base.filter(r => r.tentativas >= 5).length;
-  const desqualificados = base.filter(r => r.status_int === 'desqualificado').length;
+  const foramReabordagem = base.filter(r => ['copyA','copyB','copyC'].includes(getEtapaReal(r))).length;
+  const desqualificados = base.filter(isDesqual).length;
 
   document.getElementById('sg-total').textContent    = totalLeads;
   document.getElementById('sg-handoffs').textContent = totalHandoffs;
   document.getElementById('sg-taxa').textContent     = pct(totalHandoffs, totalLeads);
-  document.getElementById('sg-hib').textContent      = foramHibernar;
+  document.getElementById('sg-hib').textContent      = foramReabordagem;
   document.getElementById('sg-desq').textContent     = desqualificados;
 
-  // ─── FUNIL POR ETAPA ──────────────────────────────────
+  // ─── FUNIL POR ETAPA (Copy A 30DD / Copy B 60DD / Copy C 90DD / Nutrição) ──
   const etapas = [
-    {tent:1, nome:'Apresentação', grupo:'inicial'},
-    {tent:2, nome:'FUP 1',        grupo:'inicial'},
-    {tent:3, nome:'FUP 2',        grupo:'inicial'},
-    {tent:4, nome:'FUP 3/4',      grupo:'inicial'},
-    {tent:6, nome:'Copy A',       grupo:'reabordagem'},
-    {tent:7, nome:'Copy B',       grupo:'reabordagem'},
-    {tent:8, nome:'Copy C',       grupo:'reabordagem'},
+    {key:'inicial', nome:'Follow-up inicial', tag:'tag-a', label:'1ª abordagem'},
+    {key:'copyA',   nome:'Copy A · 30 dias',  tag:'tag-b', label:'Reabordagem'},
+    {key:'copyB',   nome:'Copy B · 60 dias',  tag:'tag-b', label:'Reabordagem'},
+    {key:'copyC',   nome:'Copy C · 90 dias',  tag:'tag-b', label:'Reabordagem'},
   ];
 
-  const handoffsPorEtapa = etapas.map(e => ({
-    ...e,
-    handoffs: base.filter(r => isHandoff(r) && r.tentativas === e.tent).length,
-    total:    base.filter(r => r.tentativas >= e.tent).length,
-  }));
+  const porEtapa = etapas.map(e => {
+    const rowsEtapa = base.filter(r => getEtapaReal(r) === e.key);
+    return { ...e, total: rowsEtapa.length, handoffs: rowsEtapa.filter(isHandoff).length };
+  });
 
-  const maxH = Math.max(...handoffsPorEtapa.map(e => e.handoffs), 1);
-  const winnerIdx = handoffsPorEtapa.reduce((best, e, i) => e.handoffs > handoffsPorEtapa[best].handoffs ? i : best, 0);
+  const maxH = Math.max(...porEtapa.map(e => e.handoffs), 1);
+  const winnerIdx = porEtapa.reduce((best, e, i) => e.handoffs > porEtapa[best].handoffs ? i : best, 0);
 
-  document.getElementById('etapa-grid').innerHTML = handoffsPorEtapa.map((e, i) => `
+  document.getElementById('etapa-grid').innerHTML = porEtapa.map((e, i) => `
     <div class="etapa-card ${i === winnerIdx && e.handoffs > 0 ? 'winner' : ''}">
       ${i === winnerIdx && e.handoffs > 0 ? '<span class="winner-crown">👑</span>' : ''}
-      <span class="etapa-tag ${e.grupo === 'inicial' ? 'tag-a' : 'tag-b'}">${e.grupo === 'inicial' ? '1ª tentativa' : 'Reabordagem'}</span>
+      <span class="etapa-tag ${e.tag}">${e.label}</span>
       <div class="etapa-nome">${e.nome}</div>
       <div class="etapa-handoffs">${e.handoffs}</div>
-      <div class="etapa-taxa">handoffs · <span>${pct(e.handoffs, e.total)}</span></div>
+      <div class="etapa-taxa">handoffs de ${e.total} · <span>${pct(e.handoffs, e.total)}</span></div>
       <div class="etapa-bar"><div class="etapa-bar-fill" style="width:${Math.round(e.handoffs/maxH*100)}%"></div></div>
     </div>
-  `).join('');
+  `).join('') + `
+    <div class="etapa-card">
+      <span class="etapa-tag tag-n">Nutrição</span>
+      <div class="etapa-nome">Aguardando reabordagem (90d)</div>
+      <div class="etapa-handoffs">${base.filter(r => getEtapaReal(r) === 'nutricao').length}</div>
+      <div class="etapa-taxa">esgotaram a cadência sem responder</div>
+    </div>
+  `;
 
   // ─── TABELA ───────────────────────────────────────────
   let filtered = base.filter(r => {
@@ -317,12 +331,10 @@ function renderAll() {
     return;
   }
 
-  // Ordenar por tentativas
-  filtered.sort((a,b) => a.tentativas - b.tentativas);
+  const etapaLabel = { inicial:'Follow-up inicial', copyA:'Copy A (30d)', copyB:'Copy B (60d)', copyC:'Copy C (90d)', nutricao:'Nutrição', esgotado:'Esgotado' };
 
   const tbody = filtered.map(r => {
     const avcls  = r.vendedor === 'Ronaldo' ? 'p-blue' : 'p-amber';
-    const cadcls = r.cadencia === 'Inicial' ? 'tag-a' : 'tag-b';
     return `<tr>
       <td><div class="empresa-nome">${r.empresa || '—'}</div></td>
       <td>
@@ -330,8 +342,8 @@ function renderAll() {
         <div class="contato-email">${r.email || '—'}</div>
       </td>
       <td><span class="pill ${avcls}">${r.vendedor}</span></td>
-      <td><span class="etapa-tag ${cadcls}">${r.cadencia}</span></td>
-      <td>${r.etapa_nome}</td>
+      <td><span class="pill p-gray">${(r.etapa || '—').replace(/_/g,' ')}</span></td>
+      <td>${etapaLabel[getEtapaReal(r)] || '—'}</td>
       <td>${r.tentativas}</td>
       <td>${r.data_str || '—'}</td>
       <td style="max-width:240px;font-size:12px;color:var(--text-2)">${r.contexto || '—'}</td>
@@ -345,8 +357,8 @@ function renderAll() {
           <th>Empresa</th>
           <th>Contato</th>
           <th>Vendedor</th>
-          <th>Etapa</th>
-          <th>E-mail que gerou handoff</th>
+          <th>Etapa do funil</th>
+          <th>Etapa da cadência</th>
           <th>Tentativas</th>
           <th>Primeiro contato</th>
           <th>Contexto</th>
@@ -377,8 +389,8 @@ function exportCadencias() {
     'Contato':              r.nome,
     'E-mail':               r.email,
     'Vendedor':             r.vendedor,
-    'Etapa':                r.cadencia,
-    'Email_que_gerou_handoff': r.etapa_nome,
+    'Etapa_funil':          r.etapa,
+    'Etapa_cadencia':       getEtapaReal(r),
     'Tentativas':           r.tentativas,
     'Data_primeiro_contato': r.data_str,
     'Contexto':             r.contexto,
@@ -397,7 +409,7 @@ function exportToExcel(data, filename) {
       return str.includes(';') || str.includes('\n') ? `"${str}"` : str;
     }).join(';'))
   ];
-  const csv  = '\uFEFF' + csvRows.join('\n');
+  const csv  = '﻿' + csvRows.join('\n');
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
