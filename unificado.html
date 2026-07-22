@@ -888,13 +888,13 @@ function renderRamperApp(m, mPrev, periodLabel, compareLabel) {
   const sellerInfo = { Ronaldo: { av:'RO', cls:'av-blue' }, David: { av:'DA', cls:'av-amber' } };
 
   const funil = [
-    { label:'Leads abordados', n:m.total, color:'#378ADD' },
+    { label:'Total de leads na campanha', n:m.total, color:'#378ADD' },
     { label:'E-mails disparados', n:m.disparos, color:'#185FA5' },
     { label:'Respondidos', n:m.respondidos, color:'#1D9E75' },
     { label:'Handoffs realizados', n:m.handoffs, color:'#BA7517' },
     { label:'Desqualificados', n:m.desqual, color:'#E24B4A' },
-    { label:'Hibernando (cad. B)', n:m.hibernando, color:'#7B68EE' },
-    { label:'Em reabordagem (cad. B)', n:m.reabordagem, color:'#E67E22' },
+    { label:'Aguardando reabordagem (30d)', n:m.hibernando, color:'#7B68EE' },
+    { label:'Em reabordagem (Copy A/B/C)', n:m.reabordagem, color:'#E67E22' },
     { label:'Esgotados', n:m.esgotado, color:'#C0392B' },
   ];
 
@@ -905,14 +905,14 @@ function renderRamperApp(m, mPrev, periodLabel, compareLabel) {
     </div>
 
     <div class="metrics-grid">
-      ${rmpMetricCard('Leads abordados', m.total, noCompare?null:p.total, `${pct(m.ativos,m.total)} ativos`, '', '')}
+      ${rmpMetricCard('Total de leads na campanha', m.total, noCompare?null:p.total, `${pct(m.ativos,m.total)} ativos`, '', '')}
       ${rmpMetricCard('E-mails disparados', m.disparos, noCompare?null:p.disparos, `média ${m.total?Math.round(m.disparos/m.total):0}/lead`, '', 'blue')}
       ${rmpMetricCard('Respondidos', m.respondidos, noCompare?null:p.respondidos, pct(m.respondidos,m.disparos)+' dos disparos', 'green', '')}
       ${rmpMetricCard('Handoffs', m.handoffs, noCompare?null:p.handoffs, pct(m.handoffs,m.respondidos)+' das respostas', 'green', '')}
       ${rmpMetricCard('Taxa de resposta', m.disparos ? pct(m.respondidos,m.disparos) : '—', null, null, '', '')}
       ${rmpMetricCard('Desqualificados', m.desqual, noCompare?null:p.desqual, pct(m.desqual,m.respondidos)+' das respostas', 'red', 'warn')}
-      ${rmpMetricCard('Hibernando', m.hibernando, noCompare?null:p.hibernando, 'aguardando cadência B', '', '')}
-      ${rmpMetricCard('Reabordagem B', m.reabordagem, noCompare?null:p.reabordagem, pct(m.reabordagem,m.hibernando)+' dos hibernados', '', '')}
+      ${rmpMetricCard('Aguardando reabordagem (30d)', m.hibernando, noCompare?null:p.hibernando, 'antes de iniciar Copy A', '', '')}
+      ${rmpMetricCard('Em reabordagem (Copy A/B/C)', m.reabordagem, noCompare?null:p.reabordagem, pct(m.reabordagem,m.hibernando)+' dos que aguardavam', '', '')}
       ${rmpMetricCard('Esgotados', m.esgotado, noCompare?null:p.esgotado, pct(m.esgotado,m.total)+' do total', 'red', 'warn')}
     </div>
 
@@ -939,7 +939,7 @@ function renderRamperApp(m, mPrev, periodLabel, compareLabel) {
       ${m.porVendedor.map(sv => { const si = sellerInfo[sv.nome]; const pv = noCompare ? null : p.porVendedor?.find(v => v.nome === sv.nome);
         return `<div class="card">
           <div class="seller-header"><div class="avatar ${si.cls}">${si.av}</div><div><div class="seller-name">${sv.nome}</div></div></div>
-          <div class="kpi-row"><span class="kpi-key">Leads abordados</span><span class="kpi-val">${sv.total} ${pv?rmpDeltaHtml(sv.total,pv.total):''}</span></div>
+          <div class="kpi-row"><span class="kpi-key">Total de leads</span><span class="kpi-val">${sv.total} ${pv?rmpDeltaHtml(sv.total,pv.total):''}</span></div>
           <div class="kpi-row"><span class="kpi-key">E-mails disparados</span><span class="kpi-val">${sv.disparos} ${pv?rmpDeltaHtml(sv.disparos,pv.disparos):''}</span></div>
           <div class="kpi-row"><span class="kpi-key">Respondidos</span><span class="kpi-val">${sv.respondidos} ${renderPill(pct(sv.respondidos,sv.disparos),'p-blue')}</span></div>
           <div class="kpi-row"><span class="kpi-key">Handoffs</span><span class="kpi-val">${sv.handoffs} ${renderPill(pct(sv.handoffs,sv.respondidos),'p-green')} ${pv?rmpDeltaHtml(sv.handoffs,pv.handoffs):''}</span></div>
