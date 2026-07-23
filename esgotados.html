@@ -65,7 +65,8 @@ tr:hover td { background: var(--bg); }
 .tag { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; display: inline-block; }
 .tag-a { background: var(--blue-bg); color: var(--blue); }
 .tag-b { background: var(--amber-bg); color: var(--amber); }
-.tag-n { background: var(--purple-bg); color: var(--purple); }
+.tag-c { background: var(--purple-bg); color: var(--purple); }
+.tag-n { background: var(--green-bg); color: var(--green); }
 .tag-sep { color: var(--text-3); font-size: 10px; margin: 0 2px; }
 .contexto-text { font-size: 12px; color: var(--text-2); max-width: 260px; line-height: 1.4; }
 .dias-badge { font-size: 12px; font-weight: 600; color: var(--danger); }
@@ -77,16 +78,15 @@ tr:hover td { background: var(--bg); }
 
 .section-title { font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .07em; margin-bottom: .75rem; margin-top: 1.75rem; display: flex; align-items: center; gap: 8px; }
 .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-.section-note { font-size: 11px; color: var(--text-3); margin: -.5rem 0 1rem; }
-.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
-@media(max-width:700px){ .grid3 { grid-template-columns: 1fr; } }
+.section-note { font-size: 12px; color: var(--text-3); background: var(--amber-bg); border: 1px solid var(--amber); border-radius: var(--radius-sm); padding: 8px 12px; margin-bottom: 1rem; }
+.grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1rem; }
+@media(max-width:800px){ .grid4 { grid-template-columns: 1fr 1fr; } }
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; }
 .card-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
 .kpi-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
 .kpi-row:last-child { border-bottom: none; }
 .kpi-key { color: var(--text-2); }
 .kpi-val { font-weight: 600; color: var(--text); }
-.winner-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; background: var(--green-bg); color: var(--green); }
 
 .footer { margin-top: 2rem; padding: 1rem 0; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-3); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
 code { background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; font-family: monospace; }
@@ -134,35 +134,39 @@ code { background: var(--bg); border: 1px solid var(--border); border-radius: 4p
     <div class="stat"><div class="stat-label">Dias médios em cadência</div><div class="stat-value" id="stat-tempo">—</div></div>
   </div>
 
-  <!-- COMPARATIVO CADÊNCIA -->
   <div class="section-title">Eficiência das cadências — conversões por etapa</div>
-  <div class="section-note">Nutrição ainda envia só 1 e-mail hoje no Ramper (não os 6 planejados) — assim que essa cadência for construída, o comparativo passa a trazer qual dos e-mails de nutrição gerou o handoff.</div>
-  <div class="grid3" id="comp-cadencia">
+  <div class="section-note">A cadência de reabordagem hoje tem 3 etapas (Copy A · 30 dias, Copy B · 60 dias, Copy C · 90 dias). A nutrição está planejada para 6 e-mails, mas por enquanto só o 1º e-mail está ativo no automatismo — os números abaixo refletem o que já está em produção.</div>
+  <div class="grid4" id="comp-cadencia">
     <div class="card">
-      <div class="card-title"><span class="tag tag-a">A</span> Copy A — 30 dias</div>
+      <div class="card-title"><span class="tag tag-a">A</span> Copy A · 30 dias</div>
       <div class="kpi-row"><span class="kpi-key">Leads na etapa</span><span class="kpi-val" id="ca-total">—</span></div>
       <div class="kpi-row"><span class="kpi-key">Handoffs</span><span class="kpi-val" id="ca-conv">—</span></div>
       <div class="kpi-row"><span class="kpi-key">Taxa de handoff</span><span class="kpi-val" id="ca-taxa">—</span></div>
     </div>
     <div class="card">
-      <div class="card-title"><span class="tag tag-b">B</span> Copy B — 60 dias</div>
+      <div class="card-title"><span class="tag tag-b">B</span> Copy B · 60 dias</div>
       <div class="kpi-row"><span class="kpi-key">Leads na etapa</span><span class="kpi-val" id="cb-total">—</span></div>
       <div class="kpi-row"><span class="kpi-key">Handoffs</span><span class="kpi-val" id="cb-conv">—</span></div>
       <div class="kpi-row"><span class="kpi-key">Taxa de handoff</span><span class="kpi-val" id="cb-taxa">—</span></div>
     </div>
     <div class="card">
-      <div class="card-title"><span class="tag tag-n" style="background:var(--purple-bg);color:var(--purple)">C</span> Copy C — 90 dias</div>
+      <div class="card-title"><span class="tag tag-c">C</span> Copy C · 90 dias</div>
       <div class="kpi-row"><span class="kpi-key">Leads na etapa</span><span class="kpi-val" id="cc-total">—</span></div>
       <div class="kpi-row"><span class="kpi-key">Handoffs</span><span class="kpi-val" id="cc-conv">—</span></div>
-      <div class="kpi-row"><span class="kpi-key">Esgotados (sem resposta)</span><span class="kpi-val" id="cc-esg">—</span></div>
+      <div class="kpi-row"><span class="kpi-key">Taxa de handoff</span><span class="kpi-val" id="cc-taxa">—</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="tag tag-n">N</span> Nutrição (1 de 6 e-mails ativo)</div>
+      <div class="kpi-row"><span class="kpi-key">Leads na etapa</span><span class="kpi-val" id="cn-total">—</span></div>
+      <div class="kpi-row"><span class="kpi-key">Handoffs</span><span class="kpi-val" id="cn-conv">—</span></div>
+      <div class="kpi-row"><span class="kpi-key">Taxa de handoff</span><span class="kpi-val" id="cn-taxa">—</span></div>
     </div>
   </div>
 
-  <!-- TABELA ESGOTADOS -->
   <div class="section-title">Lista de empresas esgotadas</div>
   <div class="table-card">
     <div class="table-header">
-      <span class="table-title">Empresas sem resposta após Copy A + Copy B + Copy C</span>
+      <span class="table-title">Empresas sem resposta após Copy A + Copy B + Copy C + Nutrição</span>
       <span class="table-count" id="table-count">0 registros</span>
     </div>
     <div id="table-content">
@@ -171,7 +175,7 @@ code { background: var(--bg); border: 1px solid var(--border); border-radius: 4p
   </div>
 
   <div class="footer">
-    <span>Esgotados: <code>etapa_funil = esgotado</code> · tabela <code>ramper_leads</code></span>
+    <span>Esgotados: <code>etapa_funil = esgotado</code> (sem resposta após toda a cadência de reabordagem + nutrição)</span>
     <span id="last-update">—</span>
   </div>
 
@@ -185,23 +189,22 @@ const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let allRows = [];
 let esgotados = [];
 
-function diasDesde(date) {
-  if(!date) return null;
-  return Math.round((new Date() - date) / (1000*60*60*24));
-}
+function esc(s){ return (s ?? '').toString().replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function diasDesde(date) { if(!date) return null; return Math.round((new Date() - date) / (1000*60*60*24)); }
 function pct(a, b) { if(!b) return '—'; return (a/b*100).toFixed(1) + '%'; }
+
+// ---- Classificação real (mesma lógica do unificado.html / cadencias.html) ----
 function isHandoff(r) {
-  return r.proxima === 'handoff' || r.etapa === 'contato_humano' || r.status_int === 'qualificado' || r.status_int === 'encerrado_handoff';
+  return r.status_interno === 'qualificado' || r.status_interno === 'encerrado_handoff' || r.proxima_acao === 'handoff' || r.etapa_funil === 'contato_humano';
 }
 function getEtapaReal(r) {
-  if (r.etapa === 'esgotado') return 'esgotado';
-  if (r.etapa === 'nutricao') return 'nutricao';
-  if (r.proxima === 'reabordagem_b1') return 'copyA';
-  if (r.proxima === 'reabordagem_b2') return 'copyB';
-  if (r.proxima === 'reabordagem_b3') return 'copyC';
-  if (r.etapa === 'reabordagem') return 'copyB';
-  if (r.etapa === 'quarentena') return 'copyA';
-  return 'inicial';
+  if (r.etapa_funil === 'esgotado') return 'esgotado';
+  if (isHandoff(r)) return 'handoff';
+  if (r.etapa_funil === 'nutricao') return 'nutricao';
+  if (r.proxima_acao === 'reabordagem_b1') return 'copy_a';
+  if (r.proxima_acao === 'reabordagem_b2') return 'copy_b';
+  if (r.proxima_acao === 'reabordagem_b3') return 'copy_c';
+  return 'outro';
 }
 
 async function loadData() {
@@ -212,22 +215,8 @@ async function loadData() {
     const { data, error } = await client.from('ramper_leads').select('*');
     if (error) throw error;
 
-    allRows = (data || []).map(r => ({
-      vendedor:   r.vendedor,
-      nome:       r.nome,
-      empresa:    r.empresa,
-      email:      r.email,
-      status_int: r.status_interno,
-      etapa:      r.etapa_funil,
-      status:     r.status,
-      proxima:    r.proxima_acao,
-      contexto:   r.contexto_email,
-      tentativas: Number(r.tentativas) || 0,
-      data_str:   r.data_primeiro_contato ? r.data_primeiro_contato.split('-').reverse().join('/') : '',
-      data:       r.data_primeiro_contato ? new Date(r.data_primeiro_contato + 'T00:00:00') : null,
-    })).filter(r => r.vendedor);
-
-    esgotados = allRows.filter(r => r.etapa === 'esgotado');
+    allRows = (data || []).filter(r => r.vendedor);
+    esgotados = allRows.filter(r => r.etapa_funil === 'esgotado');
 
     document.getElementById('last-update').textContent =
       'Atualizado ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
@@ -246,33 +235,26 @@ function renderAll() {
   const base = seller === 'all' ? allRows : allRows.filter(r => r.vendedor === seller);
 
   // ─── STATS ───────────────────────────────────────────
-  const esgBase = base.filter(r => r.etapa === 'esgotado');
+  const esgBase = base.filter(r => r.etapa_funil === 'esgotado');
   document.getElementById('stat-total').textContent   = esgBase.length;
   document.getElementById('stat-ronaldo').textContent = esgotados.filter(r => r.vendedor === 'Ronaldo').length;
   document.getElementById('stat-david').textContent   = esgotados.filter(r => r.vendedor === 'David').length;
 
-  const comData = esgBase.filter(r => r.data);
+  const comData = esgBase.filter(r => r.data_primeiro_contato).map(r => new Date(r.data_primeiro_contato + 'T00:00:00'));
   const tempoMedio = comData.length
-    ? Math.round(comData.reduce((a,r) => a + (diasDesde(r.data)||0), 0) / comData.length)
+    ? Math.round(comData.reduce((a,d) => a + (diasDesde(d)||0), 0) / comData.length)
     : null;
   document.getElementById('stat-tempo').textContent = tempoMedio !== null ? tempoMedio + 'd' : '—';
 
-  // ─── COMPARATIVO Copy A / B / C ───────────────────────
-  const rowsA = base.filter(r => getEtapaReal(r) === 'copyA');
-  const rowsB = base.filter(r => getEtapaReal(r) === 'copyB');
-  const rowsC = base.filter(r => getEtapaReal(r) === 'copyC');
-
-  document.getElementById('ca-total').textContent = rowsA.length;
-  document.getElementById('ca-conv').textContent  = rowsA.filter(isHandoff).length;
-  document.getElementById('ca-taxa').textContent  = pct(rowsA.filter(isHandoff).length, rowsA.length);
-
-  document.getElementById('cb-total').textContent = rowsB.length;
-  document.getElementById('cb-conv').textContent  = rowsB.filter(isHandoff).length;
-  document.getElementById('cb-taxa').textContent  = pct(rowsB.filter(isHandoff).length, rowsB.length);
-
-  document.getElementById('cc-total').textContent = rowsC.length;
-  document.getElementById('cc-conv').textContent  = rowsC.filter(isHandoff).length;
-  document.getElementById('cc-esg').textContent   = base.filter(r => r.etapa === 'esgotado').length;
+  // ─── COMPARATIVO COPY A/B/C + NUTRIÇÃO ─────────────────────
+  const stageMap = { a:'copy_a', b:'copy_b', c:'copy_c', n:'nutricao' };
+  Object.entries(stageMap).forEach(([prefix, key]) => {
+    const stageRows = base.filter(r => getEtapaReal(r) === key);
+    const stageHandoffs = base.filter(r => getEtapaReal(r) === key && isHandoff(r)).length;
+    document.getElementById(`c${prefix}-total`).textContent = stageRows.length;
+    document.getElementById(`c${prefix}-conv`).textContent  = stageHandoffs;
+    document.getElementById(`c${prefix}-taxa`).textContent  = pct(stageHandoffs, stageRows.length);
+  });
 
   // ─── TABELA ───────────────────────────────────────────
   let filtered = esgBase.filter(r => {
@@ -287,30 +269,30 @@ function renderAll() {
 
   if(filtered.length === 0) {
     document.getElementById('table-content').innerHTML =
-      `<div class="empty-msg"><div class="empty-icon">✅</div><div>${search ? 'Nenhum resultado para essa busca.' : 'Nenhuma empresa esgotada ainda.'}</div></div>`;
+      `<div class="empty-msg"><div class="empty-icon">✅</div><div>${search ? 'Nenhum resultado para essa busca.' : 'Nenhuma empresa esgotada ainda (ninguém completou Copy A + B + C + nutrição sem resposta).'}</div></div>`;
     return;
   }
 
   const tbody = filtered.map(r => {
     const avcls = r.vendedor === 'Ronaldo' ? 'p-blue' : 'p-amber';
-    const dias  = diasDesde(r.data);
+    const data = r.data_primeiro_contato ? new Date(r.data_primeiro_contato + 'T00:00:00') : null;
+    const dias  = diasDesde(data);
     return `<tr>
-      <td><div class="empresa-nome">${r.empresa || '—'}</div></td>
+      <td><div class="empresa-nome">${esc(r.empresa || '—')}</div></td>
       <td>
-        <div class="contato-nome">${r.nome || '—'}</div>
-        <div class="contato-email">${r.email || '—'}</div>
+        <div class="contato-nome">${esc(r.nome || '—')}</div>
+        <div class="contato-email">${esc(r.email || '—')}</div>
       </td>
-      <td><span class="pill ${avcls}">${r.vendedor}</span></td>
+      <td><span class="pill ${avcls}">${esc(r.vendedor)}</span></td>
       <td>
-        <span class="tag tag-a">A</span>
-        <span class="tag-sep">+</span>
-        <span class="tag tag-b">B</span>
-        <span class="tag-sep">+</span>
-        <span class="tag" style="background:var(--purple-bg);color:var(--purple)">C</span>
+        <span class="tag tag-a">A</span><span class="tag-sep">+</span>
+        <span class="tag tag-b">B</span><span class="tag-sep">+</span>
+        <span class="tag tag-c">C</span><span class="tag-sep">+</span>
+        <span class="tag tag-n">N</span>
       </td>
-      <td>${r.data_str || '—'}</td>
+      <td>${data ? data.toLocaleDateString('pt-BR') : '—'}</td>
       <td>${dias !== null ? `<span class="dias-badge">${dias}d</span>` : '—'}</td>
-      <td><div class="contexto-text">${r.contexto || '—'}</div></td>
+      <td><div class="contexto-text">${esc(r.contexto_email || '—')}</div></td>
     </tr>`;
   }).join('');
 
@@ -321,7 +303,7 @@ function renderAll() {
           <th>Empresa</th>
           <th>Contato</th>
           <th>Vendedor</th>
-          <th>Cadência</th>
+          <th>Cadência completa</th>
           <th>Primeiro contato</th>
           <th>Dias em cadência</th>
           <th>Contexto</th>
@@ -339,17 +321,16 @@ function exportEsgotados() {
 
   let data = esgotados.filter(r => {
     if(seller !== 'all' && r.vendedor !== seller) return false;
-    if(search && !r.empresa.toLowerCase().includes(search) && !r.nome.toLowerCase().includes(search)) return false;
+    if(search && !(r.empresa||'').toLowerCase().includes(search) && !(r.nome||'').toLowerCase().includes(search)) return false;
     return true;
   }).map(r => ({
-    'Empresa':              r.empresa,
-    'Contato':              r.nome,
-    'E-mail':               r.email,
-    'Vendedor':             r.vendedor,
-    'Cadencia':             'A+B+C',
-    'Tentativas':           r.tentativas,
-    'Data_primeiro_contato': r.data_str,
-    'Contexto':             r.contexto,
+    'Empresa':  r.empresa,
+    'Contato':  r.nome,
+    'E-mail':   r.email,
+    'Vendedor': r.vendedor,
+    'Cadencia': 'Copy A+B+C+Nutricao',
+    'Data_primeiro_contato': r.data_primeiro_contato,
+    'Contexto': r.contexto_email,
   }));
 
   exportToExcel(data, 'esgotados_platina');
