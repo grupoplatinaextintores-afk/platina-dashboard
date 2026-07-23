@@ -40,7 +40,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .btn-refresh svg { width: 13px; height: 13px; fill: none; stroke: white; stroke-width: 2; }
 
 /* LAYOUT */
-.main { max-width: 1100px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
+.main { max-width: 1140px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
 .panel { display: none; }
 .panel.active { display: block; }
 
@@ -62,12 +62,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
 /* MÉTRICAS */
 .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 1.5rem; }
-.metric { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: .875rem 1rem; }
+.metric { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: .875rem 1rem; position: relative; }
+.metric.clickable { cursor: pointer; transition: box-shadow .15s, border-color .15s; }
+.metric.clickable:hover { box-shadow: 0 2px 10px rgba(0,0,0,.06); border-color: var(--text-3); }
+.metric.active-filter { border-color: var(--red); box-shadow: 0 0 0 1px var(--red) inset; }
 .metric.highlight { border-left: 3px solid var(--green); }
 .metric.highlight-warn { border-left: 3px solid var(--danger); }
 .metric.highlight-blue { border-left: 3px solid var(--blue); }
 .metric.highlight-amber { border-left: 3px solid var(--amber); }
-.metric-label { font-size: 11px; color: var(--text-3); font-weight: 500; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+.metric-label { font-size: 11px; color: var(--text-3); font-weight: 500; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; display: flex; align-items: center; gap: 4px; }
+.metric-label .hint { cursor: help; opacity: .7; text-transform: none; letter-spacing: 0; font-weight: 400; }
 .metric-value { font-size: 28px; font-weight: 600; color: var(--text); line-height: 1; margin-bottom: 4px; }
 .metric-value.green { color: var(--green); } .metric-value.red { color: var(--danger); }
 .metric-value.blue { color: var(--blue); } .metric-value.amber { color: var(--amber); }
@@ -81,7 +85,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .funnel-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem 1.5rem; margin-bottom: 1rem; }
 .funnel-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
 .funnel-row:last-child { margin-bottom: 0; }
-.funnel-name { font-size: 12px; color: var(--text-2); min-width: 150px; }
+.funnel-name { font-size: 12px; color: var(--text-2); min-width: 190px; }
 .funnel-track { flex: 1; background: var(--bg); border-radius: 4px; height: 26px; overflow: hidden; }
 .funnel-fill { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 10px; font-size: 11px; font-weight: 600; color: white; transition: width .7s cubic-bezier(.4,0,.2,1); min-width: 28px; }
 .funnel-n { font-size: 13px; font-weight: 600; color: var(--text); min-width: 30px; text-align: right; }
@@ -90,7 +94,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 /* GRID */
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
-@media(max-width:640px){ .grid2,.grid3{ grid-template-columns:1fr; } .metrics-grid{ grid-template-columns:1fr 1fr; } .header{ flex-wrap: wrap; height: auto; padding: 10px 1rem; } .header-tabs{ order: 3; width: 100%; justify-content: center; padding-top: 6px; } }
+.grid4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+@media(max-width:640px){ .grid2,.grid3,.grid4{ grid-template-columns:1fr 1fr; } .metrics-grid{ grid-template-columns:1fr 1fr; } .header{ flex-wrap: wrap; height: auto; padding: 10px 1rem; } .header-tabs{ order: 3; width: 100%; justify-content: center; padding-top: 6px; } }
 
 /* PERÍODO / COMPARATIVO (Ramper) */
 .period-label { font-size: 12px; color: var(--text-2); margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
@@ -102,14 +107,24 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .delta-up { background: var(--green-bg); color: var(--green); }
 .delta-down { background: var(--danger-bg); color: var(--danger); }
 .delta-zero { background: var(--gray-bg); color: var(--gray); }
-.conv-stat { text-align: center; padding: 1rem; }
-.conv-value { font-size: 36px; font-weight: 700; color: var(--blue); line-height: 1; }
-.conv-unit { font-size: 12px; color: var(--text-3); margin-top: 4px; }
-.conv-label { font-size: 11px; color: var(--text-2); margin-top: 8px; }
 
 /* CARDS */
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; }
+.card-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
 .chart-wrap { position: relative; width: 100%; }
+
+/* ETAPA CARDS (cadência) */
+.etapa-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+@media(max-width:700px){ .etapa-grid { grid-template-columns: repeat(2,1fr); } }
+.etapa-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: .875rem; text-align: center; }
+.etapa-tag { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; display: inline-block; margin-bottom: 6px; }
+.tag-a { background: var(--blue-bg); color: var(--blue); }
+.tag-b { background: var(--amber-bg); color: var(--amber); }
+.tag-c { background: var(--purple-bg); color: var(--purple); }
+.tag-n { background: var(--green-bg); color: var(--green); }
+.etapa-nome { font-size: 11px; color: var(--text-3); margin-bottom: 8px; }
+.etapa-num { font-size: 26px; font-weight: 700; color: var(--text); line-height: 1; }
+.etapa-sub { font-size: 11px; color: var(--text-3); margin-top: 4px; }
 
 /* VENDEDOR (Carteira) */
 .seller-header { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; padding-bottom: .75rem; border-bottom: 1px solid var(--border); }
@@ -123,11 +138,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .kpi-key { color: var(--text-2); }
 .kpi-val { font-weight: 500; color: var(--text); display: flex; align-items: center; gap: 6px; }
 
-/* TABELA (Ramper/Orçamentos) */
+/* TABELA */
 .table-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-.table-header { padding: .875rem 1.25rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.table-header { padding: .875rem 1.25rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
 .table-title { font-size: 13px; font-weight: 600; color: var(--text); }
-.table-count { font-size: 11px; color: var(--text-3); background: var(--bg); border: 1px solid var(--border); border-radius: 20px; padding: 2px 10px; }
+.table-count { font-size: 11px; color: var(--text-3); background: var(--bg); border: 1px solid var(--border); border-radius: 20px; padding: 2px 10px; white-space: nowrap; }
 table { width: 100%; border-collapse: collapse; }
 th { background: var(--bg); padding: .625rem 1rem; text-align: left; font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .05em; border-bottom: 1px solid var(--border); white-space: nowrap; }
 td { padding: .75rem 1rem; font-size: 13px; color: var(--text); border-bottom: 1px solid var(--border); vertical-align: top; }
@@ -143,6 +158,7 @@ tr:hover td { background: var(--bg); }
 .p-gray { background: var(--gray-bg); color: var(--gray); }
 .p-red { background: var(--danger-bg); color: var(--danger); }
 .muted { color: var(--text-3); }
+.btn-light.active-filter { background: var(--red); border-color: var(--red); color: #fff; }
 
 /* LOADING / EMPTY */
 .state-msg { text-align: center; padding: 3rem; color: var(--text-3); font-size: 13px; }
@@ -263,7 +279,6 @@ code { background: var(--bg); border: 1px solid var(--border); border-radius: 4p
     <div class="filters">
       <span class="filter-label">Período</span>
       <select class="filter-select" id="rmp-period" onchange="loadRamper()">
-        <option value="all" selected>Todo período</option>
         <option value="today">Hoje</option>
         <option value="week">Esta semana</option>
         <option value="month">Este mês</option>
@@ -272,15 +287,13 @@ code { background: var(--bg); border: 1px solid var(--border); border-radius: 4p
         <option value="yesterday">Ontem</option>
         <option value="last_week">Semana anterior</option>
         <option value="last_month">Mês anterior</option>
-        <option value="last_quarter">Trimestre anterior</option>
-        <option value="last_year">Ano anterior</option>
+        <option value="all" selected>Todo período</option>
       </select>
       <div class="filter-separator"></div>
       <span class="filter-label">Comparado a</span>
       <select class="filter-select" id="rmp-compare" onchange="loadRamper()">
         <option value="none" selected>Sem comparativo</option>
         <option value="prev_month">Mês anterior</option>
-        <option value="prev_quarter">Mesmo período do trimestre anterior</option>
         <option value="prev_year">Mesmo mês do ano anterior</option>
       </select>
       <div class="filter-separator"></div>
@@ -294,7 +307,7 @@ code { background: var(--bg); border: 1px solid var(--border); border-radius: 4p
       <a href="cadencias.html" class="btn-light">📊 Ver Cadências</a>
       <a href="esgotados.html" class="btn-light">🚫 Esgotados</a>
       <button class="btn-light" id="rf-all" onclick="setRamperRespFilter('all')">Todos</button>
-      <button class="btn-light" id="rf-respondeu" onclick="setRamperRespFilter('respondeu')">Respondeu</button>
+      <button class="btn-light" id="rf-resp" onclick="setRamperRespFilter('respondeu')">Respondeu</button>
       <button class="btn-light" id="rf-nao" onclick="setRamperRespFilter('nao_respondeu')">Não respondeu</button>
       <button class="btn-refresh" onclick="exportRamper()" style="background:rgba(29,158,117,.15);border-color:rgba(29,158,117,.35);color:var(--green)">📥 Exportar</button>
       <span class="badge-live"><span class="dot-live"></span>Tempo real</span>
@@ -306,12 +319,15 @@ code { background: var(--bg); border: 1px solid var(--border); border-radius: 4p
   <section class="panel" id="panel-orcamentos">
     <div class="filters">
       <span class="filter-label">Vendedor:</span>
-      <select class="filter-select" id="orc-f-vendedor" onchange="renderOrcamentos()"><option value="all">Todos</option></select>
+      <select class="filter-select" id="orc-f-vendedor" onchange="renderOrcamentos()">
+        <option value="all">Todos</option>
+        <option value="DAVID FAGUNDES">David</option>
+        <option value="RONALDO CESAR CAPRINO LEME">Ronaldo</option>
+      </select>
       <div class="filter-separator"></div>
-      <button class="btn-light" id="oqf-all" onclick="quickSetOrcStatus('all')">Todos</button>
-      <button class="btn-light" id="oqf-bounce" onclick="quickSetOrcStatus('bounce')">Bounce</button>
-      <button class="btn-light" id="oqf-respondido" onclick="quickSetOrcStatus('respondido')">Respondeu</button>
-      <button class="btn-light" id="oqf-nao" onclick="quickSetOrcStatus('nao_respondeu')">Não respondeu</button>
+      <button class="btn-light" id="of-bounce" onclick="setOrcQuickFilter('bounce')">Bounce</button>
+      <button class="btn-light" id="of-resp" onclick="setOrcQuickFilter('respondido')">Respondeu</button>
+      <button class="btn-light" id="of-nao" onclick="setOrcQuickFilter('nao_respondeu')">Não respondeu</button>
       <div class="filter-separator"></div>
       <span class="filter-label">Perfil:</span>
       <select class="filter-select" id="orc-f-perfil" onchange="renderOrcamentos()"><option value="all">Todos</option></select>
@@ -334,7 +350,9 @@ const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let chartTrend = null, chartSellers = null;
 let carteiraRows = [];
 let carteiraQuickFilter = 'all';
-let ramperRows = [], orcRows = [];
+let ramperAllRows = [];
+let orcAllRows = [];
+let orcQuickFilter = 'all';
 let activeTab = 'carteira';
 
 const TAB_LABELS = { carteira: 'Carteira', ramper: 'Ramper', orcamentos: 'Orçamentos' };
@@ -413,19 +431,21 @@ function loadActivePanel() {
   else loadOrcamentos();
 }
 
+// ---------- HELPERS ----------
 function esc(s){ return (s ?? '').toString().replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function fmtDate(d){ if(!d) return '—'; const [y,m,day] = d.split('-'); return `${day}/${m}/${y}`; }
 function fmtBRL(v) { if (!v && v !== 0) return '—'; return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 }).format(v); }
 function pct(a, b) { return b ? (a / b * 100).toFixed(1) + '%' : '—'; }
 function renderPill(text, cls) { return `<span class="pill ${cls}">${text}</span>`; }
 function stamp(){ document.getElementById('last-update').textContent = 'Atualizado ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'}); }
-function fillSelect(id, values, allLabel){
-  const sel = document.getElementById(id);
-  sel.innerHTML = `<option value="all">${allLabel}</option>` + values.map(v => `<option value="${esc(v)}">${esc(v).replace(/_/g,' ')}</option>`).join('');
+function nomeVendedor(v) {
+  if (v === 'DAVID FAGUNDES' || v === 'David') return 'David';
+  if (v === 'RONALDO CESAR CAPRINO LEME' || v === 'Ronaldo') return 'Ronaldo';
+  return v || '—';
 }
 
 /* =========================================================
-   CARTEIRA
+   CARTEIRA  (tabela: carteira)
    ========================================================= */
 function onPeriodChange() {
   const v = document.getElementById('filter-period').value;
@@ -434,8 +454,8 @@ function onPeriodChange() {
   if (v !== 'custom') loadData();
 }
 
-async function fetchContacts(period, seller) {
-  let url = `${SUPABASE_URL}/rest/v1/carteira?select=status,follow_count,vendedor_nome,data_disparo,data_ultimo_contato,valor_orcamento,nome_cliente,numero_orcamento,etapa_funil,reabordagem_count,motivo_perda,data_encerramento_funil,contato,email`;
+async function fetchCarteira(period, seller) {
+  let url = `${SUPABASE_URL}/rest/v1/carteira?select=status,follow_count,vendedor_nome,data_disparo,data_ultimo_contato,data_proximo_contato,valor_orcamento,nome_cliente,numero_orcamento,etapa_funil,status_followup,reabordagem_count,motivo_perda,data_encerramento_funil,contato,email,bounce_reportado,nutri_count,codigo_cliente`;
   const filters = [];
   if (seller !== 'all') filters.push(`vendedor_nome=eq.${encodeURIComponent(seller)}`);
   if (period === 'custom') {
@@ -444,7 +464,7 @@ async function fetchContacts(period, seller) {
     if (from) filters.push(`data_disparo=gte.${from}`);
     if (to) filters.push(`data_disparo=lte.${to}`);
   } else if (period !== 'all') {
-    const cutoff = new Date(Date.now() - Number(period) * 86400000).toISOString();
+    const cutoff = new Date(Date.now() - Number(period) * 86400000).toISOString().slice(0,10);
     filters.push(`data_disparo=gte.${cutoff}`);
   }
   if (filters.length) url += '&' + filters.join('&');
@@ -458,11 +478,12 @@ async function fetchContacts(period, seller) {
 
 function calcMetrics(rows) {
   const total = rows.length;
-  const enviados = rows.filter(r => ['enviado','respondido','expirado'].includes(r.status)).length;
+  const enviados = rows.filter(r => ['enviado','respondido','expirado','erro_envio'].includes(r.status)).length;
   const respondidos = rows.filter(r => r.status === 'respondido').length;
-  const bounces = rows.filter(r => r.status === 'bounce').length;
+  const bounces = rows.filter(r => r.bounce_reportado === true).length;
+  const errosEnvio = rows.filter(r => r.status === 'erro_envio').length;
   const expirados = rows.filter(r => r.status === 'expirado').length;
-  const pendentesList = rows.filter(r => r.status === 'pendente');
+  const pendentesList = rows.filter(r => !r.status || r.status === 'pendente');
   const emReabordagem = rows.filter(r => r.etapa_funil === 'reabordagem').length;
   const emNutricao = rows.filter(r => r.etapa_funil === 'nutricao').length;
   const encerrados = rows.filter(r => r.etapa_funil === 'encerrado').length;
@@ -476,9 +497,9 @@ function calcMetrics(rows) {
       avcls: nome === 'DAVID FAGUNDES' ? 'av-amber' : 'av-blue',
       region: nome === 'DAVID FAGUNDES' ? 'DDD 15 · Sorocaba e Votorantim' : 'DDD 11 · raio 100km de Sorocaba',
       total: sub.length,
-      enviados: sub.filter(r => ['enviado','respondido','expirado'].includes(r.status)).length,
+      enviados: sub.filter(r => ['enviado','respondido','expirado','erro_envio'].includes(r.status)).length,
       respondidos: sub.filter(r => r.status === 'respondido').length,
-      bounces: sub.filter(r => r.status === 'bounce').length,
+      bounces: sub.filter(r => r.bounce_reportado === true).length,
       expirados: sub.filter(r => r.status === 'expirado').length,
       valor: sub.reduce((acc, r) => acc + (Number(r.valor_orcamento) || 0), 0),
     };
@@ -489,7 +510,7 @@ function calcMetrics(rows) {
     respondidos: rows.filter(r => r.follow_count === n && r.status === 'respondido').length,
   }));
 
-  return { total, enviados, respondidos, bounces, expirados, pendentesList, emReabordagem, emNutricao, encerrados, valorTotal, bySeller, byFollowup };
+  return { total, enviados, respondidos, bounces, errosEnvio, expirados, pendentesList, emReabordagem, emNutricao, encerrados, valorTotal, bySeller, byFollowup };
 }
 
 function buildCharts(m) {
@@ -530,55 +551,38 @@ function renderLegend(id, items) {
 }
 
 function renderApp(m) {
-  const pendentes = m.total - m.enviados - m.bounces;
+  const pendentes = m.pendentesList.length;
   const funnel = [
     { label: 'Disparados (total)', n: m.total, base: m.total, color: '#378ADD' },
     { label: 'E-mails entregues', n: m.enviados, base: m.total, color: '#1D9E75' },
-    { label: 'Pendentes / processando', n: Math.max(0, pendentes), base: m.total, color: '#9C9A92' },
+    { label: 'Pendentes / processando', n: pendentes, base: m.total, color: '#9C9A92' },
     { label: 'Bounces (falha de entrega)', n: m.bounces, base: m.total, color: '#E24B4A' },
     { label: 'Respondidos', n: m.respondidos, base: m.enviados, color: '#BA7517' },
     { label: 'Expirados (sem resposta)', n: m.expirados, base: m.enviados, color: '#C4C2BA' },
-    { label: 'Em reabordagem (30/30/30d)', n: m.emReabordagem, base: m.total, color: '#E67E22' },
-    { label: 'Em nutrição (90d) ⓘ', n: m.emNutricao, base: m.total, color: '#7B68EE',
-      title: 'Contatos que já esgotaram follow-up + reabordagem e estão na fila para receber o e-mail de nutrição em até 90 dias. Ficam represados aqui até o envio de nutrição ser ativado — não é um erro de contagem.' },
-    { label: 'Encerrados ⓘ', n: m.encerrados, base: m.total, color: '#9C9A92',
-      title: 'Contatos que terminaram todo o funil (follow-up + reabordagem + nutrição) sem nunca responder. Fica zerado até o primeiro contato completar o ciclo inteiro de ~120+ dias.' },
+    { label: 'Em reabordagem (30/60/90d)', n: m.emReabordagem, base: m.total, color: '#E67E22' },
+    { label: 'Em nutrição (90d)', n: m.emNutricao, base: m.total, color: '#7B68EE' },
+    { label: 'Encerrados', n: m.encerrados, base: m.total, color: '#9C9A92' },
   ];
 
   document.getElementById('app-content').innerHTML = `
     <div class="metrics-grid">
-      <div class="metric" style="cursor:pointer" onclick="setCarteiraFilter('all')" title="Todos os contatos disparados na campanha"><div class="metric-label">Disparados</div><div class="metric-value">${m.total}</div><div class="metric-sub">total da campanha</div></div>
-      <div class="metric highlight-blue" style="cursor:pointer" onclick="setCarteiraFilter('all')" title="E-mails que chegaram ao destinatário (excluindo bounces e pendentes)"><div class="metric-label">Entregues</div><div class="metric-value blue">${m.enviados}</div><div class="metric-sub">${pct(m.enviados, m.total)} dos disparados</div></div>
-      <div class="metric highlight" style="cursor:pointer" onclick="setCarteiraFilter('respondido')" title="Contatos que responderam a algum dos e-mails da campanha"><div class="metric-label">Respondidos</div><div class="metric-value green">${m.respondidos}</div><div class="metric-sub">${pct(m.respondidos, m.enviados)} dos enviados</div></div>
-      <div class="metric highlight-warn" style="cursor:pointer" onclick="setCarteiraFilter('bounce')" title="E-mails que retornaram erro de entrega (endereço inválido, caixa cheia etc.)"><div class="metric-label">Bounces</div><div class="metric-value red">${m.bounces}</div><div class="metric-sub">${pct(m.bounces, m.enviados)} dos enviados</div></div>
-      <div class="metric" style="cursor:pointer" onclick="setCarteiraFilter('nao_respondeu')" title="Completaram as 4 tentativas de follow-up sem responder. Depois de expirar, o contato segue automaticamente para a reabordagem (30/60/90 dias) e, se ainda assim não responder, para a nutrição."><div class="metric-label">Expirados</div><div class="metric-value">${m.expirados}</div><div class="metric-sub">sem resposta após FUP4 · segue para reabordagem</div></div>
-      <div class="metric ${m.pendentesList.length ? 'highlight-warn' : ''}" title="Contatos já cadastrados mas que ainda não tiveram o primeiro e-mail disparado"><div class="metric-label">Pendentes de disparo</div><div class="metric-value ${m.pendentesList.length ? 'red' : ''}">${m.pendentesList.length}</div><div class="metric-sub">ainda não enviados</div></div>
+      <div class="metric clickable ${carteiraQuickFilter==='all'?'active-filter':''}" onclick="setCarteiraFilter('all')"><div class="metric-label">Disparados</div><div class="metric-value">${m.total}</div><div class="metric-sub">total da campanha</div></div>
+      <div class="metric highlight-blue"><div class="metric-label">Entregues</div><div class="metric-value blue">${m.enviados}</div><div class="metric-sub">${pct(m.enviados, m.total)} dos disparados</div></div>
+      <div class="metric highlight clickable ${carteiraQuickFilter==='respondido'?'active-filter':''}" onclick="setCarteiraFilter('respondido')"><div class="metric-label">Respondidos <span class="hint" title="Soma de todos os vendedores (David + Ronaldo) dentro do filtro de período/vendedor selecionado acima.">ⓘ</span></div><div class="metric-value green">${m.respondidos}</div><div class="metric-sub">${pct(m.respondidos, m.enviados)} dos enviados</div></div>
+      <div class="metric highlight-warn clickable ${carteiraQuickFilter==='bounce'?'active-filter':''}" onclick="setCarteiraFilter('bounce')"><div class="metric-label">Bounces</div><div class="metric-value red">${m.bounces}</div><div class="metric-sub">${pct(m.bounces, m.enviados)} dos enviados</div></div>
+      <div class="metric clickable ${carteiraQuickFilter==='expirado'?'active-filter':''}" onclick="setCarteiraFilter('expirado')"><div class="metric-label">Expirados <span class="hint" title="Encerrou os 4 follow-ups sem resposta do cliente. Depois de 90 dias, entra em nutrição.">ⓘ</span></div><div class="metric-value">${m.expirados}</div><div class="metric-sub">sem resposta após FUP4</div></div>
+      <div class="metric ${pendentes ? 'highlight-warn' : ''} clickable ${carteiraQuickFilter==='pendente'?'active-filter':''}" onclick="setCarteiraFilter('pendente')"><div class="metric-label">Pendentes de disparo</div><div class="metric-value ${pendentes ? 'red' : ''}">${pendentes}</div><div class="metric-sub">ainda não enviados</div></div>
       <div class="metric highlight-amber"><div class="metric-label">Valor Total</div><div class="metric-value amber" style="font-size:18px">${fmtBRL(m.valorTotal)}</div><div class="metric-sub">em orçamentos</div></div>
     </div>
-
-    ${m.pendentesList.length ? `
-    <div class="section-title">Pendentes de disparo (aguardando 1º envio)</div>
-    <div class="table-card" style="margin-bottom:1rem">
-      <div class="table-header"><span class="table-title">Contatos ainda não disparados</span><span class="table-count">${m.pendentesList.length} registro${m.pendentesList.length!==1?'s':''}</span></div>
-      <table>
-        <thead><tr><th>Cliente</th><th>Orçamento</th><th>Vendedor</th><th>Entrada</th></tr></thead>
-        <tbody>
-          ${m.pendentesList.map(r => `
-            <tr>
-              <td class="nome-principal">${esc(r.nome_cliente || '—')}</td>
-              <td>${esc(r.numero_orcamento || '—')}</td>
-              <td>${r.vendedor_nome === 'DAVID FAGUNDES' ? 'David' : r.vendedor_nome === 'RONALDO CESAR CAPRINO LEME' ? 'Ronaldo' : esc(r.vendedor_nome || '—')}</td>
-              <td>${fmtDate(r.data_disparo)}</td>
-            </tr>`).join('')}
-        </tbody>
-      </table>
-    </div>` : ''}
 
     <div class="section-title">Funil de entregas</div>
     <div class="funnel-card">
       ${funnel.map(f => { const w = f.base ? Math.max(3, Math.round(f.n / f.base * 100)) : 3;
-        return `<div class="funnel-row" ${f.title ? `title="${esc(f.title)}"` : ''}><span class="funnel-name">${f.label}</span><div class="funnel-track"><div class="funnel-fill" style="width:${w}%;background:${f.color}">${pct(f.n, f.base)}</div></div><span class="funnel-n">${f.n}</span></div>`;
+        return `<div class="funnel-row"><span class="funnel-name">${f.label}</span><div class="funnel-track"><div class="funnel-fill" style="width:${w}%;background:${f.color}">${pct(f.n, f.base)}</div></div><span class="funnel-n">${f.n}</span></div>`;
       }).join('')}
+    </div>
+    <div class="footer" style="margin-top:0;padding-top:.5rem;border-top:none">
+      <span><b>Em nutrição</b>: follow-up encerrado sem resposta há 90+ dias — o cliente recebe e-mails de nutrição espaçados. <b>Encerrados</b>: nutrição também terminou sem conversão (fim do funil). Hoje ${m.encerrados===0?'ninguém chegou nessa etapa ainda':m.encerrados+' contato(s) chegaram nessa etapa'}.</span>
     </div>
 
     <div class="section-title">Resultado por follow-up</div>
@@ -604,10 +608,6 @@ function renderApp(m) {
 
     <div class="section-title">Base de contatos</div>
     <div class="filters" style="margin-bottom:12px">
-      <button class="btn-light" id="cf-all" onclick="setCarteiraFilter('all')">Todos</button>
-      <button class="btn-light" id="cf-bounce" onclick="setCarteiraFilter('bounce')">Bounce</button>
-      <button class="btn-light" id="cf-respondido" onclick="setCarteiraFilter('respondido')">Respondeu</button>
-      <button class="btn-light" id="cf-nao" onclick="setCarteiraFilter('nao_respondeu')">Não respondeu</button>
       <input type="text" class="search-input" id="carteira-search" placeholder="Buscar cliente ou orçamento..." oninput="renderCarteiraTable()">
     </div>
     <div class="table-card" id="carteira-table-wrap" style="margin-bottom:1.5rem"></div>
@@ -623,58 +623,54 @@ function renderApp(m) {
   renderLegend('legend-sellers', [['#BA7517', 'David'], ['#185FA5', 'Ronaldo']]);
   renderCarteiraTable();
   renderCarteiraChurn();
-  updateCarteiraFilterButtons();
-}
-
-function nomeVendedor(v) {
-  if (v === 'DAVID FAGUNDES') return 'David';
-  if (v === 'RONALDO CESAR CAPRINO LEME') return 'Ronaldo';
-  return v || '—';
 }
 
 function statusPill(status) {
   const map = {
-    respondido: 'p-green', bounce: 'p-red', enviado: 'p-blue',
-    expirado: 'p-gray', pendente: 'p-gray', erro_envio: 'p-red', processando: 'p-blue'
+    respondido: 'p-green', enviado: 'p-blue',
+    expirado: 'p-gray', pendente: 'p-gray', erro_envio: 'p-red'
   };
-  return `<span class="pill ${map[status] || 'p-gray'}">${esc(status || '—').replace(/_/g,' ')}</span>`;
+  return `<span class="pill ${map[status] || 'p-gray'}" title="${statusTitle(status)}">${esc(status || '—').replace(/_/g,' ')}</span>`;
+}
+function statusTitle(status) {
+  const map = {
+    expirado: 'Follow-up encerrado sem resposta do cliente (4 tentativas).',
+    respondido: 'Cliente respondeu a algum dos e-mails.',
+    enviado: 'E-mail enviado, aguardando follow-up ou resposta.',
+    erro_envio: 'Falha técnica ao enviar o e-mail (não é bounce do cliente).',
+  };
+  return map[status] || '';
 }
 
-function setCarteiraFilter(f) { carteiraQuickFilter = f; renderCarteiraTable(); updateCarteiraFilterButtons(); }
-
-function updateCarteiraFilterButtons() {
-  const map = { all: 'cf-all', bounce: 'cf-bounce', respondido: 'cf-respondido', nao_respondeu: 'cf-nao' };
-  Object.entries(map).forEach(([key, id]) => {
-    const el = document.getElementById(id);
-    if (el) el.style.cssText = key === carteiraQuickFilter ? 'background:var(--red);border-color:var(--red);color:#fff' : '';
-  });
-}
+function setCarteiraFilter(f) { carteiraQuickFilter = (carteiraQuickFilter === f) ? 'all' : f; renderApp(calcMetrics(carteiraRows)); }
 
 function renderCarteiraTable() {
   const wrap = document.getElementById('carteira-table-wrap');
   if (!wrap) return;
   const search = (document.getElementById('carteira-search')?.value || '').toLowerCase();
   let rows = carteiraRows.filter(r => {
-    if (carteiraQuickFilter === 'bounce') return r.status === 'bounce';
+    if (carteiraQuickFilter === 'bounce') return r.bounce_reportado === true;
     if (carteiraQuickFilter === 'respondido') return r.status === 'respondido';
-    if (carteiraQuickFilter === 'nao_respondeu') return ['enviado', 'expirado'].includes(r.status);
+    if (carteiraQuickFilter === 'expirado') return r.status === 'expirado';
+    if (carteiraQuickFilter === 'pendente') return !r.status || r.status === 'pendente';
     return true;
   });
-  if (search) rows = rows.filter(r => `${r.nome_cliente || ''} ${r.numero_orcamento || ''}`.toLowerCase().includes(search));
+  if (search) rows = rows.filter(r => `${r.nome_cliente || ''} ${r.numero_orcamento || ''} ${r.contato||''}`.toLowerCase().includes(search));
 
   wrap.innerHTML = `
-    <div class="table-header"><span class="table-title">Contatos</span><span class="table-count">${rows.length} registro${rows.length !== 1 ? 's' : ''}</span></div>
+    <div class="table-header"><span class="table-title">Contatos${carteiraQuickFilter!=='all' ? ' — filtro: '+carteiraQuickFilter : ''}</span><span class="table-count">${rows.length} registro${rows.length !== 1 ? 's' : ''}</span></div>
     <table>
-      <thead><tr><th>Cliente</th><th>Orçamento</th><th>Vendedor</th><th>Status</th><th>Último contato</th></tr></thead>
+      <thead><tr><th>Cliente</th><th>Orçamento</th><th>Valor</th><th>Vendedor</th><th>Status</th><th>Último contato</th></tr></thead>
       <tbody>
         ${rows.length ? rows.map(r => `
           <tr>
-            <td class="nome-principal">${esc(r.nome_cliente || '—')}</td>
+            <td class="nome-principal">${esc(r.nome_cliente || '—')}${r.contato ? `<div class="sub-info">${esc(r.contato)}</div>` : ''}</td>
             <td>${esc(r.numero_orcamento || '—')}</td>
+            <td>${fmtBRL(r.valor_orcamento)}</td>
             <td>${nomeVendedor(r.vendedor_nome)}</td>
             <td>${statusPill(r.status)}</td>
             <td>${fmtDate(r.data_ultimo_contato)}</td>
-          </tr>`).join('') : `<tr><td colspan="5" class="muted" style="text-align:center;padding:24px">Nenhum resultado para esse filtro.</td></tr>`}
+          </tr>`).join('') : `<tr><td colspan="6" class="muted" style="text-align:center;padding:24px">Nenhum resultado para esse filtro.</td></tr>`}
       </tbody>
     </table>
   `;
@@ -713,8 +709,9 @@ async function loadData() {
   const seller = document.getElementById('filter-seller')?.value || 'all';
   document.getElementById('app-content').innerHTML = '<div class="state-msg"><div class="spinner"></div>Carregando dados...</div>';
   try {
-    const rows = await fetchContacts(period, seller);
+    const rows = await fetchCarteira(period, seller);
     carteiraRows = rows;
+    carteiraQuickFilter = 'all';
     const m = calcMetrics(rows);
     renderApp(m);
     stamp();
@@ -724,13 +721,8 @@ async function loadData() {
 }
 
 /* =========================================================
-   RAMPER
+   RAMPER  (tabela: ramper_leads)
    ========================================================= */
-const RMP_COL = { LEAD_ID:0, VENDEDOR:1, NOME:2, EMPRESA:3, EMAIL:4, TELEFONE:5, STATUS_INT:6, ETAPA:7, ULTIMA_ACAO:8, DATA_PRIMEIRO:9, DECISOR:10, CONTEXTO:11, STATUS:12, PROXIMA:13, DATA_PROXIMA:14, STATUS_EXEC:15, TENTATIVAS:16, MSG_ID:17, CARGO:18, PERFIL:19, TAG:20 };
-let rmpCharts = {};
-let rmpAllRows = [];
-let rmpRespFilter = 'all';
-
 function rmpStartOfDay(d){ const r=new Date(d); r.setHours(0,0,0,0); return r; }
 function rmpEndOfDay(d){ const r=new Date(d); r.setHours(23,59,59,999); return r; }
 
@@ -746,9 +738,7 @@ function getPeriodRange(period, refDate=new Date()) {
     case 'month': return [new Date(y, m, 1), rmpEndOfDay(now)];
     case 'last_month': return [new Date(y, m-1, 1), new Date(y, m, 0, 23,59,59)];
     case 'quarter': { const qStart = Math.floor(m/3)*3; return [new Date(y, qStart, 1), rmpEndOfDay(now)]; }
-    case 'last_quarter': { const qStart = Math.floor(m/3)*3; const pqStart = qStart-3; if(pqStart<0) return [new Date(y-1,9,1), new Date(y-1,12,0,23,59,59)]; return [new Date(y,pqStart,1), new Date(y,qStart,0,23,59,59)]; }
     case 'year': return [new Date(y,0,1), rmpEndOfDay(now)];
-    case 'last_year': return [new Date(y-1,0,1), new Date(y-1,11,31,23,59,59)];
     case 'all': default: return [new Date(2020,0,1), rmpEndOfDay(now)];
   }
 }
@@ -757,573 +747,374 @@ function getComparePeriod(period, compareTo) {
   const [start, end] = getPeriodRange(period);
   const duration = end - start;
   if(compareTo === 'prev_month') { const s = new Date(start); s.setMonth(s.getMonth()-1); return [s, new Date(s.getTime()+duration)]; }
-  if(compareTo === 'prev_quarter') { const s = new Date(start); s.setMonth(s.getMonth()-3); return [s, new Date(s.getTime()+duration)]; }
   if(compareTo === 'prev_year') { const s = new Date(start); s.setFullYear(s.getFullYear()-1); return [s, new Date(s.getTime()+duration)]; }
   return null;
 }
-function rmpFmtDate(d){ return d.toLocaleDateString('pt-BR', {day:'2-digit', month:'short', year:'numeric'}); }
-function rmpParseDate(str) {
-  if(!str) return null;
-  try {
-    const s = String(str).trim();
-    if(/^\d{4}-\d{2}-\d{2}/.test(s)) { const d = new Date(s.substring(0,10)+'T00:00:00'); return isNaN(d) ? null : d; }
-    if(/^\d{1,2}\/\d{1,2}\/\d{4}/.test(s)) { const [dd,mm,yy] = s.split('/'); const d = new Date(`${yy}-${mm.padStart(2,'0')}-${dd.padStart(2,'0')}T00:00:00`); return isNaN(d) ? null : d; }
-    if(!isNaN(s) && s !== '') { const serial = parseFloat(s); if(serial>40000 && serial<50000) { const d = new Date((serial-25569)*86400*1000); return isNaN(d) ? null : d; } }
-  } catch(e) {}
-  return null;
-}
 
-async function fetchRamperSheetRows() {
-  const { data, error } = await client.from('ramper_leads').select('*').order('created_at', { ascending: false }).limit(2000);
-  if (error) throw error;
-  return (data || []).map(r => ({
-    lead_id: r.lead_id_ramper, vendedor: r.vendedor, nome: r.nome, empresa: r.empresa, email: r.email,
-    status_int: r.status_interno, etapa: r.etapa_funil, ultima_acao: r.ultima_acao,
-    data_str: r.data_primeiro_contato ? fmtDate(r.data_primeiro_contato) : '',
-    data: r.data_primeiro_contato ? new Date(r.data_primeiro_contato + 'T00:00:00') : null,
-    status: r.status, proxima: r.proxima_acao, status_exec: r.status_execucao,
-    data_proxima_str: r.data_proxima_acao ? fmtDate(r.data_proxima_acao) : '',
-    tentativas: Number(r.tentativas) || 0, contexto: r.contexto_email,
-    cargo: r.cargo, perfil: r.perfil_detectado, tag: r.tag_interesse,
-  })).filter(r => r.vendedor);
-}
-
-// Etapa real da cadência de reabordagem — baseada em proxima_acao/etapa_funil.
-// "tentativas" é só um contador cumulativo de disparos (nunca chega a 4/7/8 na prática),
-// por isso não serve para identificar em qual copy o lead está.
-function rmpEtapaReal(r) {
-  if (r.etapa === 'esgotado') return 'esgotado';
-  if (r.etapa === 'nutricao') return 'nutricao';
-  if (r.proxima === 'reabordagem_b1') return 'copyA';
-  if (r.proxima === 'reabordagem_b2') return 'copyB';
-  if (r.proxima === 'reabordagem_b3') return 'copyC';
-  if (r.etapa === 'reabordagem') return 'copyB';
-  if (r.etapa === 'quarentena') return 'copyA';
-  return 'inicial';
-}
+// Classificação real da etapa (usa etapa_funil + proxima_acao + status_interno, não mais "tentativas")
 function rmpIsHandoff(r) {
-  return r.proxima === 'handoff' || r.etapa === 'contato_humano' || r.status_int === 'qualificado' || r.status_int === 'encerrado_handoff';
+  return r.status_interno === 'qualificado' || r.status_interno === 'encerrado_handoff' || r.proxima_acao === 'handoff' || r.etapa_funil === 'contato_humano';
 }
 function rmpIsDesqual(r) {
-  return r.etapa === 'perdido' || r.status_int === 'desqualificado';
+  return r.proxima_acao === 'finalizar' || r.status_interno === 'encerrado';
+}
+function rmpEtapaReal(r) {
+  if (rmpIsHandoff(r)) return 'handoff';
+  if (rmpIsDesqual(r)) return 'desqualificado';
+  if (r.etapa_funil === 'em_conversa') return 'em_conversa';
+  if (r.etapa_funil === 'quarentena') return 'quarentena';
+  if (r.proxima_acao === 'reabordagem_b1') return 'copy_a';
+  if (r.proxima_acao === 'reabordagem_b2') return 'copy_b';
+  if (r.proxima_acao === 'reabordagem_b3') return 'copy_c';
+  if (r.etapa_funil === 'novo_responsavel') return 'novo_responsavel';
+  if ((r.etapa_funil||'').startsWith('novo_lead') || (r.etapa_funil||'') === 'novo_leaed') return 'novo_lead';
+  if (r.proxima_acao === 'enviar_apresentacao' || r.proxima_acao === 'apresentacao_enviada') return 'apresentacao';
+  if ((r.proxima_acao||'').startsWith('iniciar_followup')) return 'followup';
+  return 'outro';
+}
+const RMP_ETAPA_LABEL = {
+  novo_lead: 'Novo lead', apresentacao: 'Apresentação enviada', followup: 'Em follow-up',
+  copy_a: 'Reabordagem · Copy A (30d)', copy_b: 'Reabordagem · Copy B (60d)', copy_c: 'Reabordagem · Copy C (90d)',
+  quarentena: 'Quarentena', em_conversa: 'Em conversa', handoff: 'Handoff realizado',
+  desqualificado: 'Desqualificado', novo_responsavel: 'Novo responsável', outro: 'Outro',
+};
+function rmpAcaoLabel(p) {
+  const map = {
+    enviar_apresentacao: 'Enviar apresentação', apresentacao_enviada: 'Apresentação enviada',
+    iniciar_followup_1: 'Iniciar follow-up 1', iniciar_followup_2: 'Iniciar follow-up 2', iniciar_followup_3: 'Iniciar follow-up 3',
+    reabordagem_b1: 'Reabordagem Copy A (30d)', reabordagem_b2: 'Reabordagem Copy B (60d)', reabordagem_b3: 'Reabordagem Copy C (90d)',
+    handoff: 'Handoff', finalizar: 'Finalizar / desqualificar', retomar_contato: 'Retomar contato', verificar_email: 'Verificar e-mail',
+  };
+  return map[p] || (p ? esc(p).replace(/_/g,' ') : '—');
 }
 
-function rmpCalcMetrics(rows, range) {
-  const [start, end] = range;
-  const isAll = range[0].getFullYear() === 2020;
-  const base = rows.filter(r => { if(isAll) return true; if(!r.data) return false; return r.data >= start && r.data <= end; });
-
-  // Baseado em etapa_funil, que é o campo mais confiável e consistente em todo o sistema atual.
-  // "Respondeu" = o lead saiu do fluxo automático (novo_lead/followup/quarentena/reabordagem/esgotado)
-  // e teve interação real: em_conversa, contato_humano (handoff), perdido (desinteresse) ou novo_responsavel (transferência).
-  const RESPONDEU = ['em_conversa','contato_humano','perdido','novo_responsavel'];
-
-  const total = base.length;
-  const disparos = base.reduce((acc, r) => acc + r.tentativas, 0);
-  const respondidos = base.filter(r => RESPONDEU.includes(r.etapa)).length;
-  const handoffs = base.filter(rmpIsHandoff).length;
-  const desqual = base.filter(rmpIsDesqual).length;
-  const ativos = base.filter(r => r.status === 'ativo').length;
-  const aguardCopyA = base.filter(r => rmpEtapaReal(r) === 'copyA').length;
-  const aguardCopyB = base.filter(r => rmpEtapaReal(r) === 'copyB').length;
-  const aguardCopyC = base.filter(r => rmpEtapaReal(r) === 'copyC').length;
-  const hibernando = aguardCopyA; // mantido por compatibilidade com o card "aguardando reabordagem"
-  const reabordagem = aguardCopyB + aguardCopyC;
-  const esgotado = base.filter(r => r.etapa === 'esgotado').length;
-
-  const respondidosComData = base.filter(r => r.data && RESPONDEU.includes(r.etapa));
-  const tempoConversao = respondidosComData.length > 0
-    ? Math.round(respondidosComData.reduce((acc, r) => acc + Math.max(0, (new Date() - r.data) / 86400000), 0) / respondidosComData.length)
-    : null;
-
-  const porVendedor = ['Ronaldo','David'].map(nome => {
-    const sub = base.filter(r => r.vendedor === nome);
-    return {
-      nome, total: sub.length,
-      disparos: sub.reduce((a,r) => a + r.tentativas, 0),
-      respondidos: sub.filter(r => RESPONDEU.includes(r.etapa)).length,
-      handoffs: sub.filter(rmpIsHandoff).length,
-      desqual: sub.filter(rmpIsDesqual).length,
-      ativos: sub.filter(r => r.status === 'ativo').length,
-    };
-  });
-
-  const porEtapa = [1,2,3,4].map(n => ({
-    n, total: base.filter(r => r.tentativas === n).length,
-    respondidos: base.filter(r => r.tentativas === n && RESPONDEU.includes(r.etapa)).length,
-  }));
-
-  return { total, disparos, respondidos, handoffs, desqual, ativos, hibernando, aguardCopyA, aguardCopyB, aguardCopyC, reabordagem, esgotado, tempoConversao, porVendedor, porEtapa, rows: base };
+function rmpParseDate(str) {
+  if(!str) return null;
+  try { return new Date(str + 'T00:00:00'); } catch(e) { return null; }
 }
 
-function rmpDeltaHtml(curr, prev) {
-  if(prev === null || prev === undefined) return '';
-  if(prev < 5 && curr > prev) return '<span class="delta delta-zero">—</span>';
-  if(prev === 0 && curr === 0) return '<span class="delta delta-zero">0%</span>';
-  if(prev === 0) return '<span class="delta delta-zero">—</span>';
-  const d = ((curr - prev) / prev * 100).toFixed(0);
-  const cls = d > 0 ? 'delta-up' : d < 0 ? 'delta-down' : 'delta-zero';
-  return `<span class="delta ${cls}">${d > 0 ? '+' : ''}${d}%</span>`;
+async function fetchRamper() {
+  const url = `${SUPABASE_URL}/rest/v1/ramper_leads?select=*&limit=2000`;
+  const { data: { session } } = await client.auth.getSession();
+  const token = session?.access_token || SUPABASE_ANON_KEY;
+  const res = await fetch(url, { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${token}` } });
+  if (!res.ok) throw new Error(`Supabase: ${res.status}`);
+  return res.json();
 }
-function rmpMetricCard(label, value, prev, sub, cls='', highlight='') {
-  const borderCls = highlight ? `highlight${highlight === 'warn' ? '-warn' : highlight === 'blue' ? '-blue' : ''}` : '';
-  const prevHtml = prev !== null && prev !== undefined
-    ? `<div class="metric-compare"><span class="metric-prev">${prev} anterior</span>${rmpDeltaHtml(value, prev)}</div>`
-    : sub != null ? `<div class="metric-sub">${sub}</div>` : '';
-  return `<div class="metric ${borderCls}"><div class="metric-label">${label}</div><div class="metric-value ${cls}">${value ?? '—'}</div>${prevHtml}</div>`;
+
+let rmpRespFilter = 'all';
+function setRamperRespFilter(f) { rmpRespFilter = f; renderRamperApp(); updateRamperFilterButtons(); }
+function updateRamperFilterButtons() {
+  const map = { all: 'rf-all', respondeu: 'rf-resp', nao_respondeu: 'rf-nao' };
+  Object.entries(map).forEach(([key,id]) => document.getElementById(id)?.classList.toggle('active-filter', key===rmpRespFilter));
 }
-function rmpChartOpts(extra={}) {
-  return { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
-    scales: { x: { ticks: { color: '#9C9A92', font: { size: 11 } }, grid: { color: 'rgba(0,0,0,.05)' } },
-              y: { ticks: { color: '#9C9A92', font: { size: 11 } }, grid: { color: 'rgba(0,0,0,.05)' }, beginAtZero: true } }, ...extra };
+
+function rmpRespondeu(r) {
+  return r.etapa_funil === 'em_conversa' || rmpIsHandoff(r);
 }
-function rmpBuildChart(id, config) { if(rmpCharts[id]) rmpCharts[id].destroy(); rmpCharts[id] = new Chart(document.getElementById(id), config); }
 
-async function loadRamper(){
-  const cont = document.getElementById('ramper-content');
-  cont.innerHTML = '<div class="state-msg"><div class="spinner"></div>Carregando dados...</div>';
-  try {
-    const period = document.getElementById('rmp-period').value;
-    const compare = document.getElementById('rmp-compare').value;
-    const seller = document.getElementById('rmp-seller').value;
+function rmpCalcMetrics(rows) {
+  const total = rows.length;
+  const emailsDisparados = rows.reduce((acc,r) => acc + (Number(r.tentativas)||0), 0);
+  const handoffs = rows.filter(rmpIsHandoff).length;
+  const desqualificados = rows.filter(rmpIsDesqual).length;
+  const novoLead = rows.filter(r => rmpEtapaReal(r) === 'novo_lead').length;
+  const apresentacao = rows.filter(r => rmpEtapaReal(r) === 'apresentacao').length;
+  const followup = rows.filter(r => rmpEtapaReal(r) === 'followup').length;
+  const copyA = rows.filter(r => rmpEtapaReal(r) === 'copy_a').length;
+  const copyB = rows.filter(r => rmpEtapaReal(r) === 'copy_b').length;
+  const copyC = rows.filter(r => rmpEtapaReal(r) === 'copy_c').length;
+  const quarentena = rows.filter(r => rmpEtapaReal(r) === 'quarentena').length;
+  const emConversa = rows.filter(r => rmpEtapaReal(r) === 'em_conversa').length;
+  const emReabordagem = copyA + copyB + copyC;
+  return { total, emailsDisparados, handoffs, desqualificados, novoLead, apresentacao, followup, copyA, copyB, copyC, quarentena, emConversa, emReabordagem };
+}
 
-    rmpAllRows = await fetchRamperSheetRows();
-    const rows = seller === 'all' ? rmpAllRows : rmpAllRows.filter(r => r.vendedor === seller);
-
-    const range = getPeriodRange(period);
-    const cmpRange = compare !== 'none' ? getComparePeriod(period, compare) : null;
-    const m = rmpCalcMetrics(rows, range);
-    const mPrev = cmpRange ? rmpCalcMetrics(rows, cmpRange) : null;
-
-    const [s,e] = range;
-    const periodLabel = period === 'all' ? 'Todo o período' : `${rmpFmtDate(s)} — ${rmpFmtDate(e)}`;
-    const compareLabel = cmpRange ? `${rmpFmtDate(cmpRange[0])} — ${rmpFmtDate(cmpRange[1])}` : '';
-
-    renderRamperApp(m, mPrev, periodLabel, compareLabel);
-    stamp();
-    loadRamperNutricao();
-  } catch(err) {
-    cont.innerHTML = `<div class="state-msg">Erro ao carregar dados: ${esc(err.message)}</div>`;
+function rmpMetricCard(label, val, prevVal, sub, extraCls, hint) {
+  let compareHtml = '';
+  if (prevVal !== null && prevVal !== undefined) {
+    const delta = val - prevVal;
+    const cls = delta > 0 ? 'delta-up' : delta < 0 ? 'delta-down' : 'delta-zero';
+    const sign = delta > 0 ? '+' : '';
+    compareHtml = `<div class="metric-compare"><span class="metric-prev">ant: ${prevVal}</span><span class="delta ${cls}">${sign}${delta}</span></div>`;
   }
+  return `<div class="metric ${extraCls||''}"><div class="metric-label">${label}${hint?` <span class="hint" title="${hint}">ⓘ</span>`:''}</div><div class="metric-value">${val}</div><div class="metric-sub">${sub||''}</div>${compareHtml}</div>`;
 }
 
-function renderRamperApp(m, mPrev, periodLabel, compareLabel) {
-  const noCompare = mPrev === null;
-  const p = noCompare ? {} : mPrev;
-  const sellerInfo = { Ronaldo: { av:'RO', cls:'av-blue' }, David: { av:'DA', cls:'av-amber' } };
+function renderRamperApp() {
+  const period = document.getElementById('rmp-period').value;
+  const compareTo = document.getElementById('rmp-compare').value;
+  const seller = document.getElementById('rmp-seller').value;
 
-  const funil = [
-    { label:'Total de leads na campanha', n:m.total, base:m.total, showPct:true, color:'#378ADD' },
-    { label:'E-mails disparados', n:m.disparos, base:m.total, showPct:false, color:'#185FA5' },
-    { label:'Respondidos', n:m.respondidos, base:m.total, showPct:true, color:'#1D9E75' },
-    { label:'Handoffs realizados', n:m.handoffs, base:m.total, showPct:true, color:'#BA7517' },
-    { label:'Desqualificados', n:m.desqual, base:m.total, showPct:true, color:'#E24B4A' },
-    { label:'Aguardando Copy A (30d)', n:m.aguardCopyA, base:m.total, showPct:true, color:'#7B68EE' },
-    { label:'Em Copy B (60d)', n:m.aguardCopyB, base:m.total, showPct:true, color:'#E67E22' },
-    { label:'Em Copy C (90d)', n:m.aguardCopyC, base:m.total, showPct:true, color:'#BA7517' },
-    { label:'Esgotados', n:m.esgotado, base:m.total, showPct:true, color:'#C0392B' },
+  const [start, end] = getPeriodRange(period);
+  let base = ramperAllRows.filter(r => seller === 'all' || r.vendedor === seller);
+  base = base.filter(r => { const d = rmpParseDate(r.data_primeiro_contato); return !d || (d >= start && d <= end); });
+
+  let filtered = base;
+  if (rmpRespFilter === 'respondeu') filtered = base.filter(rmpRespondeu);
+  else if (rmpRespFilter === 'nao_respondeu') filtered = base.filter(r => !rmpRespondeu(r));
+
+  const m = rmpCalcMetrics(filtered);
+
+  let prevM = null;
+  const comparePeriod = getComparePeriod(period, compareTo);
+  if (comparePeriod) {
+    const [ps, pe] = comparePeriod;
+    let prevBase = ramperAllRows.filter(r => seller === 'all' || r.vendedor === seller);
+    prevBase = prevBase.filter(r => { const d = rmpParseDate(r.data_primeiro_contato); return d && d >= ps && d <= pe; });
+    prevM = rmpCalcMetrics(prevBase);
+  }
+  const noCompare = !prevM;
+
+  const funnelRows = [
+    { key:'novo_lead', label:'Novo lead', n:m.novoLead, color:'#9C9A92' },
+    { key:'apresentacao', label:'Apresentação enviada', n:m.apresentacao, color:'#378ADD' },
+    { key:'followup', label:'Em follow-up (1/2/3)', n:m.followup, color:'#185FA5' },
+    { key:'copy_a', label:'Aguardando reabordagem 30d → Copy A', n:m.copyA, color:'#E67E22' },
+    { key:'copy_b', label:'Reabordagem Copy B (60d)', n:m.copyB, color:'#BA7517' },
+    { key:'copy_c', label:'Reabordagem Copy C (90d)', n:m.copyC, color:'#6B4FA0' },
+    { key:'em_conversa', label:'Em conversa', n:m.emConversa, color:'#1D9E75' },
+    { key:'handoff', label:'Handoff realizado', n:m.handoffs, color:'#1D9E75' },
+    { key:'quarentena', label:'Quarentena', n:m.quarentena, color:'#C4C2BA' },
+    { key:'desqualificado', label:'Desqualificado (sem interesse / optout)', n:m.desqualificados, color:'#E24B4A' },
   ];
 
   document.getElementById('ramper-content').innerHTML = `
     <div class="period-label">
-      <span class="period-badge">${periodLabel}</span>
-      ${!noCompare ? `<span>vs</span><span class="compare-badge">${compareLabel}</span>` : ''}
-      <span style="margin-left:8px;color:var(--text-3)" title="Total de leads carregados no Ramper (tabela ramper_leads) dentro do período selecionado, somando todos os vendedores.">ⓘ "Total de leads na campanha" = todos os leads do Ramper no período, de todos os vendedores</span>
+      <span class="period-badge">${document.getElementById('rmp-period').selectedOptions[0].text}</span>
+      ${!noCompare ? `<span class="compare-badge">vs ${document.getElementById('rmp-compare').selectedOptions[0].text}</span>` : ''}
     </div>
-
     <div class="metrics-grid">
-      ${rmpMetricCard('Total de leads na campanha', m.total, noCompare?null:p.total, `${pct(m.ativos,m.total)} ativos`, '', '')}
-      ${rmpMetricCard('E-mails disparados', m.disparos, noCompare?null:p.disparos, `média ${m.total?Math.round(m.disparos/m.total):0}/lead`, '', 'blue')}
-      ${rmpMetricCard('Respondidos', m.respondidos, noCompare?null:p.respondidos, pct(m.respondidos,m.total)+' do total', 'green', '')}
-      ${rmpMetricCard('Handoffs', m.handoffs, noCompare?null:p.handoffs, pct(m.handoffs,m.total)+' do total', 'green', '')}
-      ${rmpMetricCard('Taxa de resposta', m.total ? pct(m.respondidos,m.total) : '—', null, null, '', '')}
-      ${rmpMetricCard('Desqualificados', m.desqual, noCompare?null:p.desqual, pct(m.desqual,m.total)+' do total', 'red', 'warn')}
-      ${rmpMetricCard('Aguardando Copy A (30d)', m.aguardCopyA, noCompare?null:p.hibernando, 'follow-up encerrado, esperando 30d', '', '')}
-      ${rmpMetricCard('Em Copy B (60d)', m.aguardCopyB, null, 'Copy A já enviado', '', '')}
-      ${rmpMetricCard('Em Copy C (90d)', m.aguardCopyC, null, 'Copy B já enviado', '', '')}
-      ${rmpMetricCard('Esgotados', m.esgotado, noCompare?null:p.esgotado, pct(m.esgotado,m.total)+' do total', 'red', 'warn')}
+      ${rmpMetricCard('Total de leads na campanha', m.total, noCompare?null:prevM.total, 'leads carregados no Ramper', '', 'Total de leads da campanha de prospecção fria (Ramper), dentro do período e vendedor selecionados.')}
+      ${rmpMetricCard('E-mails disparados', m.emailsDisparados, noCompare?null:prevM.emailsDisparados, 'soma de todos os envios (tentativas)', 'highlight-blue', 'Soma de todos os e-mails realmente enviados a esses leads (campo tentativas), não é mais fixo em 100%.')}
+      ${rmpMetricCard('Handoffs realizados', m.handoffs, noCompare?null:prevM.handoffs, pct(m.handoffs,m.total)+' dos leads', 'highlight')}
+      ${rmpMetricCard('Em reabordagem (Copy A/B/C)', m.emReabordagem, noCompare?null:prevM.emReabordagem, pct(m.emReabordagem,m.total)+' do total', 'highlight-amber')}
+      ${rmpMetricCard('Desqualificados', m.desqualificados, noCompare?null:prevM.desqualificados, 'sem interesse / optout', 'highlight-warn')}
     </div>
 
     <div class="section-title">Funil de prospecção</div>
     <div class="funnel-card">
-      ${funil.map(f => { const base = f.base || 1; const w = Math.max(3, Math.round(f.n/base*100));
-        return `<div class="funnel-row"><span class="funnel-name">${f.label}</span><div class="funnel-track"><div class="funnel-fill" style="width:${w}%;background:${f.color}">${f.showPct ? pct(f.n, base) : f.n}</div></div><span class="funnel-n">${f.n}</span></div>`;
+      ${funnelRows.map(f => { const w = m.total ? Math.max(3, Math.round(f.n / m.total * 100)) : 3;
+        return `<div class="funnel-row"><span class="funnel-name">${f.label}</span><div class="funnel-track"><div class="funnel-fill" style="width:${w}%;background:${f.color}">${pct(f.n, m.total)}</div></div><span class="funnel-n">${f.n}</span></div>`;
       }).join('')}
     </div>
 
-    <div class="section-title">Resultado por etapa de cadência</div>
-    <div class="card" style="margin-bottom:1rem"><div class="chart-wrap" style="height:220px"><canvas id="chartEtapas"></canvas></div></div>
-    <div id="leg-etapas" style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:1.5rem"></div>
-
-    <div class="section-title">Performance</div>
-    <div class="grid3" style="margin-bottom:1rem">
-      <div class="card" style="display:flex;align-items:center;justify-content:center"><div class="conv-stat"><div class="conv-value">${m.tempoConversao !== null ? m.tempoConversao : '—'}</div><div class="conv-unit">dias</div><div class="conv-label">Tempo médio até resposta</div></div></div>
-      <div class="card" style="display:flex;align-items:center;justify-content:center"><div class="conv-stat"><div class="conv-value" style="color:var(--green)">${pct(m.handoffs, m.total)}</div><div class="conv-unit">&nbsp;</div><div class="conv-label">Taxa de conversão (handoff/lead)</div></div></div>
-      <div class="card" style="display:flex;align-items:center;justify-content:center"><div class="conv-stat"><div class="conv-value" style="color:var(--amber)">${m.total ? Math.round(m.disparos/m.total*10)/10 : '—'}</div><div class="conv-unit">e-mails/lead</div><div class="conv-label">Média de disparos por lead</div></div></div>
-    </div>
-
-    <div class="section-title">Desempenho por vendedor</div>
-    <div class="grid2" style="margin-bottom:1rem">
-      ${m.porVendedor.map(sv => { const si = sellerInfo[sv.nome]; const pv = noCompare ? null : p.porVendedor?.find(v => v.nome === sv.nome);
-        return `<div class="card">
-          <div class="seller-header"><div class="avatar ${si.cls}">${si.av}</div><div><div class="seller-name">${sv.nome}</div></div></div>
-          <div class="kpi-row"><span class="kpi-key">Total de leads</span><span class="kpi-val">${sv.total} ${pv?rmpDeltaHtml(sv.total,pv.total):''}</span></div>
-          <div class="kpi-row"><span class="kpi-key">E-mails disparados</span><span class="kpi-val">${sv.disparos} ${pv?rmpDeltaHtml(sv.disparos,pv.disparos):''}</span></div>
-          <div class="kpi-row"><span class="kpi-key">Respondidos</span><span class="kpi-val">${sv.respondidos} ${renderPill(pct(sv.respondidos,sv.disparos),'p-blue')}</span></div>
-          <div class="kpi-row"><span class="kpi-key">Handoffs</span><span class="kpi-val">${sv.handoffs} ${renderPill(pct(sv.handoffs,sv.respondidos),'p-green')} ${pv?rmpDeltaHtml(sv.handoffs,pv.handoffs):''}</span></div>
-          <div class="kpi-row"><span class="kpi-key">Taxa handoff/lead</span><span class="kpi-val" style="color:var(--green);font-weight:600">${pct(sv.handoffs,sv.total)}</span></div>
-          <div class="kpi-row"><span class="kpi-key">Desqualificados</span><span class="kpi-val">${sv.desqual} ${renderPill(pct(sv.desqual,sv.respondidos),'p-red')}</span></div>
-        </div>`; }).join('')}
-    </div>
-
-    <div class="card" style="margin-bottom:.5rem"><div class="chart-wrap" style="height:200px"><canvas id="chartVendedoresRmp"></canvas></div></div>
-    <div id="leg-vendedores-rmp" style="display:flex;gap:16px;margin-bottom:1.5rem"></div>
-
-    <div id="ramper-nutri-section"></div>
-
-    <div class="section-title">Base de leads</div>
-    <div class="filters" style="margin-bottom:12px">
-      <input type="text" class="search-input" id="ramper-table-search" placeholder="Buscar nome, empresa ou vendedor..." oninput="renderRamperTable()">
-    </div>
-    <div class="table-card" id="ramper-table-wrap" style="margin-bottom:1.5rem"></div>
-
-    <div class="section-title">Churn / Encerrados</div>
-    <div id="ramper-churn-wrap" style="margin-bottom:1.5rem"></div>
-
-    <div class="footer"><span>Dados lidos em tempo real via Google Sheets · aba <code>Pendentes_IA</code></span><span style="color:var(--text-3)">Filtro de período baseado em <code>Data_primeiro_contato</code></span></div>
+    <div class="section-title">Leads Ramper</div>
+    <div id="ramper-table-wrap"></div>
+    <div class="footer"><span>Etapa real = <code>etapa_funil</code> + <code>proxima_acao</code> + <code>status_interno</code> (não usa mais o contador de tentativas)</span><span id="rmp-count-footer"></span></div>
   `;
 
-  const etapas = ['Apresentação','FUP 1','FUP 2','FUP 3','FUP 4'];
-  rmpBuildChart('chartEtapas', { type: 'bar', data: { labels: etapas, datasets: [
-    { label:'Total', data:[m.total, ...m.porEtapa.map(e=>e.total)], backgroundColor:'#378ADD33', borderColor:'#378ADD', borderWidth:1.5 },
-    { label:'Respondidos', data:[0, ...m.porEtapa.map(e=>e.respondidos)], backgroundColor:'#1D9E7533', borderColor:'#1D9E75', borderWidth:1.5 },
-  ]}, options: rmpChartOpts() });
-
-  rmpBuildChart('chartVendedoresRmp', { type: 'bar', data: { labels: ['Total leads','Disparos','Respondidos','Handoffs'], datasets: [
-    { label:'Ronaldo', data:[m.porVendedor[0].total, m.porVendedor[0].disparos, m.porVendedor[0].respondidos, m.porVendedor[0].handoffs], backgroundColor:'#185FA533', borderColor:'#185FA5', borderWidth:1.5 },
-    { label:'David', data:[m.porVendedor[1].total, m.porVendedor[1].disparos, m.porVendedor[1].respondidos, m.porVendedor[1].handoffs], backgroundColor:'#BA751733', borderColor:'#BA7517', borderWidth:1.5 },
-  ]}, options: rmpChartOpts() });
-
-  renderLegend('leg-etapas', [['#378ADD','Total'],['#1D9E75','Respondidos']]);
-  renderLegend('leg-vendedores-rmp', [['#185FA5','Ronaldo'],['#BA7517','David']]);
-  renderRamperTable();
-  updateRamperFilterButtons();
+  renderRamperTable(filtered);
 }
 
-const RESPONDEU_ETAPAS = ['em_conversa','contato_humano','perdido','novo_responsavel'];
-
-function setRamperRespFilter(f) { rmpRespFilter = f; renderRamperTable(); updateRamperFilterButtons(); }
-
-function updateRamperFilterButtons() {
-  const map = { all: 'rf-all', respondeu: 'rf-respondeu', nao_respondeu: 'rf-nao' };
-  Object.entries(map).forEach(([key, id]) => {
-    const el = document.getElementById(id);
-    if (el) el.style.cssText = key === rmpRespFilter ? 'background:var(--red);border-color:var(--red);color:#fff' : '';
-  });
-}
-
-function etapaCadenciaLabel(r) {
-  const map = { inicial:'Follow-up inicial', copyA:'Aguardando Copy A (30d)', copyB:'Copy B (60d)', copyC:'Copy C (90d)', nutricao:'Nutrição', esgotado:'Esgotado' };
-  return map[rmpEtapaReal(r)] || '—';
-}
-
-function renderRamperTable() {
+function renderRamperTable(rows) {
   const wrap = document.getElementById('ramper-table-wrap');
   if (!wrap) return;
-  const search = (document.getElementById('ramper-table-search')?.value || '').toLowerCase();
-  let rows = rmpAllRows.filter(r => {
-    if (rmpRespFilter === 'respondeu') return RESPONDEU_ETAPAS.includes(r.etapa);
-    if (rmpRespFilter === 'nao_respondeu') return !RESPONDEU_ETAPAS.includes(r.etapa);
-    return true;
-  });
-  if (search) rows = rows.filter(r => `${r.nome || ''} ${r.empresa || ''} ${r.vendedor || ''}`.toLowerCase().includes(search));
-
-  wrap.innerHTML = `
-    <div class="table-header"><span class="table-title">Leads Ramper</span><span class="table-count">${rows.length} registro${rows.length !== 1 ? 's' : ''}</span></div>
-    <table>
-      <thead><tr><th>Nome / Empresa</th><th>Vendedor</th><th>Etapa (funil)</th><th>Cadência</th><th>Última ação</th><th>Próxima ação</th><th>Data próxima ação</th><th>Perfil</th><th>Interesse</th><th>Data</th></tr></thead>
-      <tbody>
-        ${rows.length ? rows.map(r => `
-          <tr>
-            <td><div class="nome-principal">${esc(r.nome || '—')}</div><div class="sub-info">${esc(r.empresa || '—')}</div></td>
-            <td>${esc(r.vendedor || '—')}</td>
-            <td>${renderPill((r.etapa || '—').replace(/_/g,' '), RESPONDEU_ETAPAS.includes(r.etapa) ? 'p-green' : 'p-gray')}</td>
-            <td>${renderPill(etapaCadenciaLabel(r), 'p-blue')}</td>
-            <td style="font-size:12px">${r.ultima_acao ? esc(r.ultima_acao).replace(/_/g,' ') : '<span class="muted">—</span>'}</td>
-            <td style="font-size:12px">${r.proxima ? esc(r.proxima).replace(/_/g,' ') : '<span class="muted">—</span>'}</td>
-            <td>${r.data_proxima_str || '—'}</td>
-            <td>${r.perfil ? esc(r.perfil).replace(/_/g,' ') : '<span class="muted">—</span>'}</td>
-            <td>${r.tag ? esc(r.tag).replace(/_/g,' ') : '<span class="muted">—</span>'}</td>
-            <td>${r.data_str || '—'}</td>
-          </tr>`).join('') : `<tr><td colspan="10" class="muted" style="text-align:center;padding:24px">Nenhum resultado para esse filtro.</td></tr>`}
-      </tbody>
-    </table>
-  `;
-}
-
-// Sub-seção: nutrição de 90 dias (dado novo, vem do Supabase, não da planilha)
-async function loadRamperNutricao(){
-  const el = document.getElementById('ramper-nutri-section');
-  if(!el) return;
-  try{
-    const { data, error } = await client.from('ramper_leads').select('*').order('created_at', { ascending: false });
-    if(error) throw error;
-    ramperRows = data || [];
-    const nutricao = ramperRows.filter(r => r.etapa_funil === 'nutricao');
-    el.innerHTML = `
-      <div class="section-title">Nutrição de 90 dias (Supabase)</div>
-      ${ramperRows.length === 0 ? `
-        <div class="empty-msg" style="padding:1.5rem"><div>Nenhum lead na nutrição ainda — assim que um lead esgotar a cadência ou pedir pra ser reabordado depois, ele aparece aqui.</div></div>
-      ` : `
-      <div class="table-card">
-        <div class="table-header"><span class="table-title">Aguardando reabordagem em 90 dias</span><span class="table-count">${nutricao.length} registro${nutricao.length!==1?'s':''}</span></div>
-        <table>
-          <thead><tr><th>Nome / Empresa</th><th>Vendedor</th><th>Perfil</th><th>Interesse</th><th>Motivo</th><th>Reabordagem em</th></tr></thead>
-          <tbody>
-            ${nutricao.length ? nutricao.map(r => `
-              <tr>
-                <td><div class="nome-principal">${esc(r.nome || '—')}</div><div class="sub-info">${esc(r.empresa || '—')}</div></td>
-                <td>${esc(r.vendedor || '—')}</td>
-                <td>${r.perfil_detectado ? esc(r.perfil_detectado).replace(/_/g,' ') : '<span class="muted">—</span>'}</td>
-                <td>${r.tag_interesse ? esc(r.tag_interesse).replace(/_/g,' ') : '<span class="muted">—</span>'}</td>
-                <td style="max-width:260px;font-size:12px;color:var(--text-2)">${esc(r.motivo_perda || '—')}</td>
-                <td>${fmtDate(r.data_proxima_nutricao)}</td>
-              </tr>`).join('') : `<tr><td colspan="6" class="muted" style="text-align:center;padding:24px">Nenhum lead em nutrição no momento.</td></tr>`}
-          </tbody>
-        </table>
-      </div>`}
-    `;
-    renderRamperChurn();
-  }catch(err){
-    el.innerHTML = `<div class="section-title">Nutrição de 90 dias (Supabase)</div><div class="state-msg">Erro ao carregar: ${esc(err.message)}</div>`;
-  }
-}
-
-function renderRamperChurn() {
-  const wrap = document.getElementById('ramper-churn-wrap');
-  if (!wrap) return;
-  const rows = ramperRows.filter(r => r.etapa_funil === 'encerrado');
-  if (rows.length === 0) {
-    wrap.innerHTML = `<div class="empty-msg"><div class="empty-icon">📪</div><div>Nenhum lead encerrado ainda.<br>Aparecem aqui os que esgotaram a nutrição de 90 dias sem resposta.</div></div>`;
-    return;
-  }
   wrap.innerHTML = `
     <div class="table-card">
-      <div class="table-header"><span class="table-title">Encerrados sem resposta</span><span class="table-count">${rows.length} registro${rows.length !== 1 ? 's' : ''}</span></div>
+      <div class="table-header"><span class="table-title">Leads (${rmpRespFilter==='all'?'todos':rmpRespFilter==='respondeu'?'responderam':'não responderam'})</span><span class="table-count">${rows.length} registro${rows.length!==1?'s':''}</span></div>
       <table>
-        <thead><tr><th>Nome / Empresa</th><th>Vendedor</th><th>Motivo</th><th>Encerrado em</th></tr></thead>
+        <thead><tr><th>Empresa</th><th>Contato</th><th>Vendedor</th><th>Etapa</th><th>Última ação</th><th>Próxima ação</th><th>Data próxima ação</th></tr></thead>
         <tbody>
-          ${rows.map(r => `
+          ${rows.length ? rows.map(r => `
             <tr>
-              <td><div class="nome-principal">${esc(r.nome || '—')}</div><div class="sub-info">${esc(r.empresa || '—')}</div></td>
-              <td>${esc(r.vendedor || '—')}</td>
-              <td style="max-width:280px;font-size:12px;color:var(--text-2)">${esc(r.motivo_perda || '—')}</td>
-              <td>${fmtDate(r.data_encerramento_funil)}</td>
-            </tr>`).join('')}
+              <td class="nome-principal">${esc(r.empresa||'—')}</td>
+              <td>${esc(r.nome||'—')}<div class="sub-info">${esc(r.email||'—')}</div></td>
+              <td>${nomeVendedor(r.vendedor)}</td>
+              <td><span class="pill p-blue">${RMP_ETAPA_LABEL[rmpEtapaReal(r)]||'—'}</span></td>
+              <td style="max-width:220px;font-size:12px;color:var(--text-2)">${esc(r.ultima_acao||'—')}</td>
+              <td>${rmpAcaoLabel(r.proxima_acao)}</td>
+              <td>${fmtDate(r.data_proxima_acao)}</td>
+            </tr>`).join('') : `<tr><td colspan="7" class="muted" style="text-align:center;padding:24px">Nenhum lead para esse filtro.</td></tr>`}
         </tbody>
       </table>
     </div>
   `;
 }
 
-function exportRamper() {
-  const seller = document.getElementById('rmp-seller').value;
-  const rows = seller === 'all' ? rmpAllRows : rmpAllRows.filter(r => r.vendedor === seller);
-  const data = rows.map(r => ({
-    'Lead_ID': r.lead_id, 'Vendedor': r.vendedor, 'Nome': r.nome, 'Empresa': r.empresa, 'E-mail': r.email,
-    'Status_interno': r.status_int, 'Etapa_funil': r.etapa, 'Ultima_acao': r.ultima_acao,
-    'Data_primeiro_contato': r.data_str, 'Status': r.status, 'Proxima_acao': r.proxima,
-    'Status_execucao': r.status_exec, 'Tentativas': r.tentativas, 'Cargo': r.cargo, 'Perfil': r.perfil, 'Tag_interesse': r.tag,
-  }));
-  exportToExcel(data, `ramper_platina_${seller === 'all' ? 'todos' : seller}`);
-}
-
-function exportToExcel(data, filename) {
-  if (!data || data.length === 0) { alert('Nenhum dado para exportar.'); return; }
-  const headers = Object.keys(data[0]);
-  const csvRows = [ headers.join(';'), ...data.map(row => headers.map(h => {
-    const str = String(row[h] ?? '').replace(/"/g, '""');
-    return str.includes(';') || str.includes('\n') ? `"${str}"` : str;
-  }).join(';')) ];
-  const csv = '\uFEFF' + csvRows.join('\n');
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = filename + '_' + new Date().toISOString().slice(0,10) + '.csv';
-  a.click(); URL.revokeObjectURL(url);
-}
-
-/* =========================================================
-   ORÇAMENTOS
-   ========================================================= */
-// Copy A/B/C = mesma convenção do Ramper (reabordagem aos 30/60/90 dias). Ainda não há dados reais
-// aqui porque a automação Platina-Orcamentos_5-Reabordagem segue desativada (ver lembrete pendente).
-const ORC_STAGES = [
-  ['followup', 'Follow-up', '#378ADD'],
-  ['reabordagem_b1', 'Copy A · 30 dias', '#E67E22'],
-  ['reabordagem_b2', 'Copy B · 60 dias', '#BA7517'],
-  ['reabordagem_b3', 'Copy C · 90 dias', '#6B4FA0'],
-  ['nutricao', 'Nutrição (90d)', '#7B68EE'],
-  ['encerrado', 'Encerrado', '#C4C2BA'],
-];
-let orcQuickFilter = 'all';
-
-async function loadOrcamentos(){
-  document.getElementById('orcamentos-content').innerHTML = '<div class="state-msg"><div class="spinner"></div>Carregando dados...</div>';
-  try{
-    const { data, error } = await client.from('orcamentos').select('*').order('created_at', { ascending: false });
-    if(error) throw error;
-    orcRows = data || [];
-    fillSelect('orc-f-vendedor', [...new Set(orcRows.map(r=>r.vendedor_nome).filter(Boolean))], 'Todos');
-    fillSelect('orc-f-perfil', [...new Set(orcRows.map(r=>r.perfil_detectado).filter(Boolean))], 'Todos');
-    fillSelect('orc-f-tag', [...new Set(orcRows.map(r=>r.tag_interesse).filter(Boolean))], 'Todos');
-    renderOrcamentos();
+async function loadRamper() {
+  document.getElementById('ramper-content').innerHTML = '<div class="state-msg"><div class="spinner"></div>Carregando dados...</div>';
+  try {
+    ramperAllRows = await fetchRamper();
+    renderRamperApp();
+    updateRamperFilterButtons();
     stamp();
-  }catch(err){
-    document.getElementById('orcamentos-content').innerHTML = `<div class="state-msg">Erro ao carregar dados: ${esc(err.message)}</div>`;
+  } catch(e) {
+    document.getElementById('ramper-content').innerHTML = `<div class="state-msg">Erro ao carregar: ${esc(e.message)}</div>`;
   }
 }
 
-function quickSetOrcStatus(f) { orcQuickFilter = f; renderOrcamentos(); }
-
-function updateOrcFilterButtons() {
-  const map = { all: 'oqf-all', bounce: 'oqf-bounce', respondido: 'oqf-respondido', nao_respondeu: 'oqf-nao' };
-  Object.entries(map).forEach(([key, id]) => {
-    const el = document.getElementById(id);
-    if (el) el.style.cssText = key === orcQuickFilter ? 'background:var(--red);border-color:var(--red);color:#fff' : '';
-  });
+function exportRamper() {
+  const data = ramperAllRows.map(r => ({
+    Empresa: r.empresa, Contato: r.nome, Email: r.email, Vendedor: r.vendedor,
+    Etapa: RMP_ETAPA_LABEL[rmpEtapaReal(r)] || '', Ultima_acao: r.ultima_acao,
+    Proxima_acao: rmpAcaoLabel(r.proxima_acao), Data_proxima_acao: r.data_proxima_acao,
+  }));
+  exportToExcel(data, 'ramper_platina');
 }
 
-// Traduz o par status + etapa_funil em algo próximo de "última ação" / "próxima ação".
-// A tabela orcamentos não guarda um campo de log de ação livre como o ramper_leads (ultima_acao/proxima_acao);
-// isso é uma aproximação a partir dos campos existentes (status, etapa_funil, fup_count).
+/* =========================================================
+   ORÇAMENTOS  (tabela: orcamentos)
+   ========================================================= */
 function orcUltimaAcao(r) {
+  if (r.status === 'bounce') return 'Bounce detectado';
+  if (r.status === 'optout') return 'Cliente pediu descadastro';
   if (r.status === 'respondido') return 'Cliente respondeu';
-  if (r.status === 'bounce') return 'E-mail retornou (bounce)';
-  if (r.status === 'erro_envio') return 'Falha no envio';
-  if (r.etapa_funil === 'nutricao') return 'Enviado e-mail de nutrição';
-  if (r.etapa_funil === 'encerrado') return 'Funil encerrado sem resposta';
+  if (r.etapa_funil === 'reabordagem') return `Reabordagem enviada (${r.reabordagem_count||0}x)`;
+  if (r.etapa_funil === 'nutricao') return `E-mail de nutrição enviado (${r.nutri_count||0}x)`;
   if ((r.fup_count||0) > 0) return `Follow-up ${r.fup_count} enviado`;
   return 'Orçamento enviado';
 }
 function orcProximaAcao(r) {
-  if (r.status === 'respondido' || r.etapa_funil === 'encerrado') return '—';
-  if (r.etapa_funil === 'nutricao') return 'Aguardar 90 dias';
-  if (r.etapa_funil === 'reabordagem_b1') return 'Enviar Copy B (60d)';
-  if (r.etapa_funil === 'reabordagem_b2') return 'Enviar Copy C (90d)';
-  if ((r.fup_count||0) < 4) return `Enviar follow-up ${(r.fup_count||0)+1}`;
-  return 'Iniciar reabordagem (30d)';
+  if (r.status === 'bounce' || r.status === 'optout') return 'Nenhuma (encerrado)';
+  if (r.etapa_funil === 'nutricao') return 'Próximo e-mail de nutrição';
+  if (r.etapa_funil === 'reabordagem') return 'Próxima reabordagem';
+  if ((r.fup_count||0) >= 5) return 'Nutrição / encerramento';
+  return `Follow-up ${(r.fup_count||0)+1}`;
+}
+function orcEtapaLabel(r) {
+  if (r.status === 'bounce') return { t:'Bounce', c:'p-red' };
+  if (r.status === 'optout') return { t:'Descadastrado', c:'p-gray' };
+  if (r.status === 'respondido') return { t:'Handoff realizado', c:'p-green' };
+  if (r.etapa_funil === 'nutricao') return { t:'Nutrição', c:'p-purple' };
+  if (r.etapa_funil === 'reabordagem') {
+    const n = r.reabordagem_count || 0;
+    if (n <= 0) return { t:'Reabordagem · Copy A (30d)', c:'p-amber' };
+    if (n === 1) return { t:'Reabordagem · Copy B (60d)', c:'p-amber' };
+    return { t:'Reabordagem · Copy C (90d)', c:'p-amber' };
+  }
+  return { t:'Follow-up', c:'p-blue' };
 }
 
-function renderOrcamentos(){
-  const cont = document.getElementById('orcamentos-content');
-  if(orcRows.length === 0){
-    cont.innerHTML = `<div class="empty-msg"><div class="empty-icon">📋</div><div>Nenhum orçamento registrado ainda.<br>O pipeline de Orçamentos ainda está em fase de testes — assim que for ativado, os dados aparecem aqui automaticamente.</div></div>`;
-    return;
-  }
-  const vf = document.getElementById('orc-f-vendedor').value;
-  const pf = document.getElementById('orc-f-perfil').value;
-  const tf = document.getElementById('orc-f-tag').value;
-  const q = document.getElementById('orc-search').value.toLowerCase();
+async function fetchOrcamentos() {
+  const url = `${SUPABASE_URL}/rest/v1/orcamentos?select=*&limit=2000`;
+  const { data: { session } } = await client.auth.getSession();
+  const token = session?.access_token || SUPABASE_ANON_KEY;
+  const res = await fetch(url, { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${token}` } });
+  if (!res.ok) throw new Error(`Supabase: ${res.status}`);
+  return res.json();
+}
 
-  const rows = orcRows.filter(r => {
-    if(vf !== 'all' && r.vendedor_nome !== vf) return false;
-    if(orcQuickFilter === 'bounce' && r.status !== 'bounce') return false;
-    if(orcQuickFilter === 'respondido' && r.status !== 'respondido') return false;
-    if(orcQuickFilter === 'nao_respondeu' && !['ativo','enviado'].includes(r.status)) return false;
-    if(pf !== 'all' && r.perfil_detectado !== pf) return false;
-    if(tf !== 'all' && r.tag_interesse !== tf) return false;
-    if(q && !`${r.nome_contato} ${r.empresa} ${r.numero_orcamento}`.toLowerCase().includes(q)) return false;
+function setOrcQuickFilter(f) { orcQuickFilter = (orcQuickFilter === f) ? 'all' : f; renderOrcamentos(); updateOrcFilterButtons(); }
+function updateOrcFilterButtons() {
+  const map = { bounce:'of-bounce', respondido:'of-resp', nao_respondeu:'of-nao' };
+  Object.entries(map).forEach(([key,id]) => document.getElementById(id)?.classList.toggle('active-filter', key===orcQuickFilter));
+}
+
+function orcPopulateFilters() {
+  const perfis = [...new Set(orcAllRows.map(r => r.perfil_detectado).filter(Boolean))];
+  const tags = [...new Set(orcAllRows.map(r => r.tag_interesse).filter(Boolean))];
+  const selPerfil = document.getElementById('orc-f-perfil');
+  const selTag = document.getElementById('orc-f-tag');
+  selPerfil.innerHTML = `<option value="all">Todos</option>` + perfis.map(p => `<option value="${esc(p)}">${esc(p).replace(/_/g,' ')}</option>`).join('');
+  selTag.innerHTML = `<option value="all">Todos</option>` + tags.map(p => `<option value="${esc(p)}">${esc(p).replace(/_/g,' ')}</option>`).join('');
+}
+
+function renderOrcamentos() {
+  const vendedor = document.getElementById('orc-f-vendedor').value;
+  const perfil = document.getElementById('orc-f-perfil').value;
+  const tag = document.getElementById('orc-f-tag').value;
+  const search = (document.getElementById('orc-search').value || '').toLowerCase();
+
+  let rows = orcAllRows.filter(r => {
+    if (vendedor !== 'all' && r.vendedor_nome !== vendedor) return false;
+    if (perfil !== 'all' && r.perfil_detectado !== perfil) return false;
+    if (tag !== 'all' && r.tag_interesse !== tag) return false;
+    if (orcQuickFilter === 'bounce' && r.status !== 'bounce') return false;
+    if (orcQuickFilter === 'respondido' && r.status !== 'respondido') return false;
+    if (orcQuickFilter === 'nao_respondeu' && !['ativo','erro_envio'].includes(r.status)) return false;
+    if (search && !`${r.empresa||''} ${r.nome_contato||''} ${r.numero_orcamento||''}`.toLowerCase().includes(search)) return false;
     return true;
   });
 
-  const counts = {}; ORC_STAGES.forEach(([s])=>counts[s]=0);
-  orcRows.forEach(r => { if(counts[r.etapa_funil] !== undefined) counts[r.etapa_funil]++; });
-  const total = orcRows.length;
-  const ativos = orcRows.filter(r => r.status === 'ativo').length;
-  const handoff = orcRows.filter(r => r.status === 'fechado' || r.status === 'respondido').length;
-  const erro = orcRows.filter(r => r.status === 'erro_envio').length;
-  const maxCount = Math.max(1, ...ORC_STAGES.map(([s]) => counts[s]));
+  const total = rows.length;
+  const handoff = rows.filter(r => r.status === 'respondido').length;
+  const bounce = rows.filter(r => r.status === 'bounce').length;
+  const naoResp = rows.filter(r => ['ativo','erro_envio'].includes(r.status)).length;
+  const valorTotal = rows.reduce((acc,r) => acc + (Number(r.valor_orcamento)||0), 0);
+  const valorComValor = rows.filter(r => r.valor_orcamento !== null && r.valor_orcamento !== undefined).length;
 
-  cont.innerHTML = `
+  const nutricao = rows.filter(r => r.etapa_funil === 'nutricao').length;
+  const copyA = rows.filter(r => r.etapa_funil === 'reabordagem' && (r.reabordagem_count||0) <= 0).length;
+  const copyB = rows.filter(r => r.etapa_funil === 'reabordagem' && (r.reabordagem_count||0) === 1).length;
+  const copyC = rows.filter(r => r.etapa_funil === 'reabordagem' && (r.reabordagem_count||0) >= 2).length;
+  const followup = rows.filter(r => r.etapa_funil === 'followup').length;
+
+  document.getElementById('orcamentos-content').innerHTML = `
     <div class="metrics-grid">
-      <div class="metric"><div class="metric-label">Total de orçamentos</div><div class="metric-value">${total}</div></div>
-      <div class="metric highlight"><div class="metric-label">Follow-up ativo</div><div class="metric-value green">${ativos}</div></div>
-      <div class="metric highlight-blue"><div class="metric-label">Handoff realizado</div><div class="metric-value blue">${handoff}</div></div>
-      <div class="metric highlight-warn"><div class="metric-label">Erro de envio</div><div class="metric-value red">${erro}</div></div>
+      <div class="metric"><div class="metric-label">Orçamentos enviados</div><div class="metric-value">${total}</div><div class="metric-sub">no filtro atual</div></div>
+      <div class="metric highlight-amber"><div class="metric-label">Valor total</div><div class="metric-value amber" style="font-size:20px">${fmtBRL(valorTotal)}</div><div class="metric-sub">${valorComValor}/${total} com valor identificado</div></div>
+      <div class="metric highlight"><div class="metric-label">Handoff realizado</div><div class="metric-value green">${handoff}</div><div class="metric-sub">${pct(handoff,total)} do total</div></div>
+      <div class="metric highlight-warn"><div class="metric-label">Bounce</div><div class="metric-value red">${bounce}</div><div class="metric-sub">${pct(bounce,total)} do total</div></div>
+      <div class="metric"><div class="metric-label">Não respondeu</div><div class="metric-value">${naoResp}</div><div class="metric-sub">${pct(naoResp,total)} do total</div></div>
     </div>
 
     <div class="section-title">Funil por etapa</div>
-    <div class="section-note" style="font-size:11px;color:var(--text-3);margin:-.5rem 0 1rem">Copy A/B/C e Nutrição ficam zerados até a automação de reabordagem de Orçamentos ser ativada.</div>
-    <div class="funnel-card">
-      ${ORC_STAGES.map(([s,label,c]) => { const n = counts[s]; const w = Math.max(3, Math.round(n / maxCount * 100));
-        return `<div class="funnel-row"><span class="funnel-name">${label}</span><div class="funnel-track"><div class="funnel-fill" style="width:${w}%;background:${c}">${n > 0 ? n : ''}</div></div><span class="funnel-n">${n}</span></div>`;
-      }).join('')}
+    <div class="etapa-grid" style="margin-bottom:1.5rem">
+      <div class="etapa-card"><span class="etapa-tag tag-a">Follow-up</span><div class="etapa-nome">Em follow-up inicial</div><div class="etapa-num">${followup}</div><div class="etapa-sub">${pct(followup,total)}</div></div>
+      <div class="etapa-card"><span class="etapa-tag tag-a">Copy A · 30d</span><div class="etapa-nome">Reabordagem 30 dias</div><div class="etapa-num">${copyA}</div><div class="etapa-sub">${pct(copyA,total)}</div></div>
+      <div class="etapa-card"><span class="etapa-tag tag-b">Copy B · 60d</span><div class="etapa-nome">Reabordagem 60 dias</div><div class="etapa-num">${copyB}</div><div class="etapa-sub">${pct(copyB,total)}</div></div>
+      <div class="etapa-card"><span class="etapa-tag tag-c">Copy C · 90d</span><div class="etapa-nome">Reabordagem 90 dias</div><div class="etapa-num">${copyC}</div><div class="etapa-sub">${pct(copyC,total)}</div></div>
+      <div class="etapa-card"><span class="etapa-tag tag-n">Nutrição</span><div class="etapa-nome">Em nutrição</div><div class="etapa-num">${nutricao}</div><div class="etapa-sub">${pct(nutricao,total)}</div></div>
     </div>
 
-    <div class="section-title">Orçamentos</div>
     <div class="table-card">
-      <div class="table-header"><span class="table-title">Base de orçamentos</span><span class="table-count">${rows.length} registro${rows.length!==1?'s':''}</span></div>
+      <div class="table-header"><span class="table-title">Base de orçamentos</span><span class="table-count">${total} registro${total!==1?'s':''}</span></div>
       <table>
-        <thead><tr><th>Orçamento</th><th>Cliente / Empresa</th><th>Vendedor</th><th>Última ação</th><th>Próxima ação</th><th>Data último contato</th><th>Data próximo contato</th><th>Perfil</th><th>Interesse</th></tr></thead>
+        <thead><tr><th>Empresa</th><th>Contato</th><th>Vendedor</th><th>Valor</th><th>Etapa</th><th>Última ação</th><th>Próxima ação</th><th>Data último contato</th><th>Data próximo contato</th></tr></thead>
         <tbody>
-          ${rows.length ? rows.map(r => `
+          ${rows.length ? rows.map(r => { const et = orcEtapaLabel(r); return `
             <tr>
-              <td><div class="nome-principal">${esc(r.numero_orcamento || '—')}</div></td>
-              <td>${esc(r.nome_contato || '—')}<div class="sub-info">${esc(r.empresa || '—')}</div></td>
-              <td>${esc(r.vendedor_nome || '—')}</td>
-              <td style="font-size:12px">${esc(orcUltimaAcao(r))}</td>
-              <td style="font-size:12px">${esc(orcProximaAcao(r))}</td>
+              <td class="nome-principal">${esc(r.empresa||'—')}<div class="sub-info">${esc(r.numero_orcamento||'—')}</div></td>
+              <td>${esc(r.nome_contato||'—')}<div class="sub-info">${esc(r.email_cliente||'—')}</div></td>
+              <td>${nomeVendedor(r.vendedor_nome)}</td>
+              <td>${fmtBRL(r.valor_orcamento)}</td>
+              <td><span class="pill ${et.c}">${et.t}</span></td>
+              <td style="max-width:200px;font-size:12px;color:var(--text-2)">${esc(orcUltimaAcao(r))}</td>
+              <td style="max-width:180px;font-size:12px;color:var(--text-2)">${esc(orcProximaAcao(r))}</td>
               <td>${fmtDate(r.data_ultimo_contato)}</td>
-              <td>${fmtDate(r.data_proximo_contato || r.data_proxima_nutricao)}</td>
-              <td>${r.perfil_detectado ? esc(r.perfil_detectado).replace(/_/g,' ') : '<span class="muted">—</span>'}</td>
-              <td>${r.tag_interesse ? esc(r.tag_interesse).replace(/_/g,' ') : '<span class="muted">—</span>'}</td>
-            </tr>`).join('') : `<tr><td colspan="9" class="muted" style="text-align:center;padding:24px">Nenhum resultado para esse filtro.</td></tr>`}
+              <td>${fmtDate(r.data_proximo_contato)}</td>
+            </tr>`; }).join('') : `<tr><td colspan="9" class="muted" style="text-align:center;padding:24px">Nenhum orçamento para esse filtro.</td></tr>`}
         </tbody>
       </table>
     </div>
-
-    <div class="section-title">Churn / Encerrados</div>
-    ${renderOrcChurn()}
+    <div class="footer"><span>Vendedor com dropdown fixo (David + Ronaldo) · Perfil/Interesse populados a partir dos dados carregados</span><span>tabela <code>orcamentos</code></span></div>
   `;
-  updateOrcFilterButtons();
 }
 
-function orcStatusPillClass(status) {
-  const map = { fechado: 'p-green', respondido: 'p-green', bounce: 'p-red', erro_envio: 'p-red', encerrado_sem_resposta: 'p-gray', ativo: 'p-blue' };
-  return map[status] || 'p-gray';
-}
-
-function renderOrcChurn() {
-  const rows = orcRows.filter(r => r.etapa_funil === 'encerrado');
-  if (rows.length === 0) {
-    return `<div class="empty-msg"><div class="empty-icon">📪</div><div>Nenhum orçamento encerrado ainda.<br>Aparecem aqui os que esgotaram FollowUp + Reabordagem + Nutrição sem resposta.</div></div>`;
+async function loadOrcamentos() {
+  document.getElementById('orcamentos-content').innerHTML = '<div class="state-msg"><div class="spinner"></div>Carregando dados...</div>';
+  try {
+    orcAllRows = await fetchOrcamentos();
+    orcPopulateFilters();
+    renderOrcamentos();
+    updateOrcFilterButtons();
+    stamp();
+  } catch(e) {
+    document.getElementById('orcamentos-content').innerHTML = `<div class="state-msg">Erro ao carregar: ${esc(e.message)}</div>`;
   }
-  return `
-    <div class="table-card">
-      <div class="table-header"><span class="table-title">Encerrados sem resposta</span><span class="table-count">${rows.length} registro${rows.length !== 1 ? 's' : ''}</span></div>
-      <table>
-        <thead><tr><th>Orçamento</th><th>Cliente / Empresa</th><th>Vendedor</th><th>Motivo</th><th>Encerrado em</th></tr></thead>
-        <tbody>
-          ${rows.map(r => `
-            <tr>
-              <td class="nome-principal">${esc(r.numero_orcamento || '—')}</td>
-              <td>${esc(r.nome_contato || '—')}<div class="sub-info">${esc(r.empresa || '—')}</div></td>
-              <td>${esc(r.vendedor_nome || '—')}</td>
-              <td style="max-width:280px;font-size:12px;color:var(--text-2)">${esc(r.motivo_perda || '—')}</td>
-              <td>${fmtDate(r.data_encerramento_funil)}</td>
-            </tr>`).join('')}
-        </tbody>
-      </table>
-    </div>
-  `;
 }
 
-// Inicializa datas do filtro personalizado com hoje
-const today = new Date().toISOString().split('T')[0];
-const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
-document.getElementById('date-from').value = thirtyDaysAgo;
-document.getElementById('date-to').value = today;
+/* =========================================================
+   EXPORT CSV (comum)
+   ========================================================= */
+function exportToExcel(data, filename) {
+  if (!data || data.length === 0) { alert('Nenhum dado para exportar.'); return; }
+  const headers = Object.keys(data[0]);
+  const csvRows = [
+    headers.join(';'),
+    ...data.map(row => headers.map(h => {
+      const str = String(row[h] ?? '').replace(/"/g, '""');
+      return str.includes(';') || str.includes('\n') ? `"${str}"` : str;
+    }).join(';'))
+  ];
+  const csv  = '﻿' + csvRows.join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = filename + '_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click(); URL.revokeObjectURL(url);
+}
 
 checkSession();
 </script>
