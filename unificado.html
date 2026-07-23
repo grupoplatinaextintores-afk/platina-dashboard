@@ -269,6 +269,7 @@ code { background: var(--bg); border: 1px solid var(--border); border-radius: 4p
         <option value="RONALDO CESAR CAPRINO LEME">Ronaldo</option>
         <option value="DAVID FAGUNDES">David</option>
       </select>
+      <button class="btn-refresh" onclick="exportCarteira()" style="background:rgba(29,158,117,.15);border-color:rgba(29,158,117,.35);color:var(--green)">📥 Exportar (respeita filtros)</button>
       <span class="badge-live"><span class="dot-live"></span>Tempo real</span>
     </div>
     <div id="app-content"><div class="state-msg"><div class="spinner"></div>Carregando dados...</div></div>
@@ -309,7 +310,7 @@ code { background: var(--bg); border: 1px solid var(--border); border-radius: 4p
       <button class="btn-light" id="rf-all" onclick="setRamperRespFilter('all')">Todos</button>
       <button class="btn-light" id="rf-resp" onclick="setRamperRespFilter('respondeu')">Respondeu</button>
       <button class="btn-light" id="rf-nao" onclick="setRamperRespFilter('nao_respondeu')">Não respondeu</button>
-      <button class="btn-refresh" onclick="exportRamper()" style="background:rgba(29,158,117,.15);border-color:rgba(29,158,117,.35);color:var(--green)">📥 Exportar</button>
+      <button class="btn-refresh" onclick="exportRamper()" style="background:rgba(29,158,117,.15);border-color:rgba(29,158,117,.35);color:var(--green)">📥 Exportar (respeita filtros)</button>
       <span class="badge-live"><span class="dot-live"></span>Tempo real</span>
     </div>
     <div id="ramper-content"><div class="state-msg"><div class="spinner"></div>Carregando dados...</div></div>
@@ -335,6 +336,7 @@ code { background: var(--bg); border: 1px solid var(--border); border-radius: 4p
       <span class="filter-label">Interesse:</span>
       <select class="filter-select" id="orc-f-tag" onchange="renderOrcamentos()"><option value="all">Todos</option></select>
       <input type="text" class="search-input" id="orc-search" placeholder="Buscar cliente, empresa ou nº..." oninput="renderOrcamentos()">
+      <button class="btn-refresh" onclick="exportOrcamentos()" style="background:rgba(29,158,117,.15);border-color:rgba(29,158,117,.35);color:var(--green)">📥 Exportar (respeita filtros)</button>
       <span class="badge-live"><span class="dot-live"></span>Tempo real</span>
     </div>
     <div id="orcamentos-content"><div class="state-msg"><div class="spinner"></div>Carregando dados...</div></div>
@@ -351,8 +353,10 @@ let chartTrend = null, chartSellers = null;
 let carteiraRows = [];
 let carteiraQuickFilter = 'all';
 let ramperAllRows = [];
+let rmpFilteredCache = [];
 let orcAllRows = [];
 let orcQuickFilter = 'all';
+let orcFilteredCache = [];
 let activeTab = 'carteira';
 
 const TAB_LABELS = { carteira: 'Carteira', ramper: 'Ramper', orcamentos: 'Orçamentos' };
@@ -644,9 +648,7 @@ function statusTitle(status) {
 
 function setCarteiraFilter(f) { carteiraQuickFilter = (carteiraQuickFilter === f) ? 'all' : f; renderApp(calcMetrics(carteiraRows)); }
 
-function renderCarteiraTable() {
-  const wrap = document.getElementById('carteira-table-wrap');
-  if (!wrap) return;
+function getCarteiraFilteredRows() {
   const search = (document.getElementById('carteira-search')?.value || '').toLowerCase();
   let rows = carteiraRows.filter(r => {
     if (carteiraQuickFilter === 'bounce') return r.bounce_reportado === true;
@@ -656,6 +658,13 @@ function renderCarteiraTable() {
     return true;
   });
   if (search) rows = rows.filter(r => `${r.nome_cliente || ''} ${r.numero_orcamento || ''} ${r.contato||''}`.toLowerCase().includes(search));
+  return rows;
+}
+
+function renderCarteiraTable() {
+  const wrap = document.getElementById('carteira-table-wrap');
+  if (!wrap) return;
+  const rows = getCarteiraFilteredRows();
 
   wrap.innerHTML = `
     <div class="table-header"><span class="table-title">Contatos${carteiraQuickFilter!=='all' ? ' — filtro: '+carteiraQuickFilter : ''}</span><span class="table-count">${rows.length} registro${rows.length !== 1 ? 's' : ''}</span></div>
@@ -718,6 +727,19 @@ async function loadData() {
   } catch (e) {
     document.getElementById('app-content').innerHTML = `<div class="state-msg">Erro ao carregar dados: ${esc(e.message)}</div>`;
   }
+}
+
+function exportCarteira() {
+  const rows = getCarteiraFilteredRows();
+  const period = document.getElementById('filter-period')?.selectedOptions[0]?.text || '—';
+  const seller = document.getElementById('filter-seller')?.selectedOptions[0]?.text || '—';
+  const data = rows.map(r => ({
+    Cliente: r.nome_cliente, Contato: r.contato, Email: r.email, Orcamento: r.numero_orcamento,
+    Valor: r.valor_orcamento, Vendedor: nomeVendedor(r.vendedor_nome), Status: r.status,
+    Etapa_funil: r.etapa_funil, Ultimo_contato: r.data_ultimo_contato, Proximo_contato: r.data_proximo_contato,
+    Filtro_periodo: period, Filtro_vendedor: seller, Filtro_rapido: carteiraQuickFilter,
+  }));
+  exportToExcel(data, 'carteira_platina');
 }
 
 /* =========================================================
@@ -854,6 +876,8 @@ function renderRamperApp() {
   if (rmpRespFilter === 'respondeu') filtered = base.filter(rmpRespondeu);
   else if (rmpRespFilter === 'nao_respondeu') filtered = base.filter(r => !rmpRespondeu(r));
 
+  rmpFilteredCache = filtered;
+
   const m = rmpCalcMetrics(filtered);
 
   let prevM = null;
@@ -945,10 +969,14 @@ async function loadRamper() {
 }
 
 function exportRamper() {
-  const data = ramperAllRows.map(r => ({
+  const period = document.getElementById('rmp-period')?.selectedOptions[0]?.text || '—';
+  const seller = document.getElementById('rmp-seller')?.selectedOptions[0]?.text || '—';
+  const rows = rmpFilteredCache.length ? rmpFilteredCache : ramperAllRows;
+  const data = rows.map(r => ({
     Empresa: r.empresa, Contato: r.nome, Email: r.email, Vendedor: r.vendedor,
     Etapa: RMP_ETAPA_LABEL[rmpEtapaReal(r)] || '', Ultima_acao: r.ultima_acao,
     Proxima_acao: rmpAcaoLabel(r.proxima_acao), Data_proxima_acao: r.data_proxima_acao,
+    Filtro_periodo: period, Filtro_vendedor: seller, Filtro_resposta: rmpRespFilter,
   }));
   exportToExcel(data, 'ramper_platina');
 }
@@ -1027,6 +1055,8 @@ function renderOrcamentos() {
     return true;
   });
 
+  orcFilteredCache = rows;
+
   const total = rows.length;
   const handoff = rows.filter(r => r.status === 'respondido').length;
   const bounce = rows.filter(r => r.status === 'bounce').length;
@@ -1093,6 +1123,24 @@ async function loadOrcamentos() {
   } catch(e) {
     document.getElementById('orcamentos-content').innerHTML = `<div class="state-msg">Erro ao carregar: ${esc(e.message)}</div>`;
   }
+}
+
+function exportOrcamentos() {
+  const vendedor = document.getElementById('orc-f-vendedor')?.selectedOptions[0]?.text || '—';
+  const perfil = document.getElementById('orc-f-perfil')?.selectedOptions[0]?.text || '—';
+  const tag = document.getElementById('orc-f-tag')?.selectedOptions[0]?.text || '—';
+  const rows = orcFilteredCache.length ? orcFilteredCache : orcAllRows;
+  const data = rows.map(r => {
+    const et = orcEtapaLabel(r);
+    return {
+      Empresa: r.empresa, Orcamento: r.numero_orcamento, Contato: r.nome_contato, Email: r.email_cliente,
+      Vendedor: nomeVendedor(r.vendedor_nome), Valor: r.valor_orcamento, Etapa: et.t,
+      Ultima_acao: orcUltimaAcao(r), Proxima_acao: orcProximaAcao(r),
+      Data_ultimo_contato: r.data_ultimo_contato, Data_proximo_contato: r.data_proximo_contato,
+      Filtro_vendedor: vendedor, Filtro_perfil: perfil, Filtro_interesse: tag, Filtro_rapido: orcQuickFilter,
+    };
+  });
+  exportToExcel(data, 'orcamentos_platina');
 }
 
 /* =========================================================
